@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.git/
+.env
+datasets/raw/
+datasets/interim/
+datasets/audit/
+models/runs/
+notebooks/
+tests/
+docs/
+*.md
+!README.md

@@ -1,0 +1,1234 @@
+[
+  {
+    "imagen": "datasets/raw/Cilindro_008/3.Cerca/IMG_20260903_154231.jpg",
+    "esperado": "21S062189",
+    "respuesta": {
+      "success": true,
+      "request_id": "demo-1",
+      "service_version": "1.0.0",
+      "model_version": "detector:onnx:detector.onnx|ocr:rapid:onnxruntime|parser:1.0.0",
+      "processing_time_ms": 1614,
+      "requires_manual_confirmation": true,
+      "review_reasons": [
+        "low_ocr_confidence"
+      ],
+      "data": {
+        "numero_serie": {
+          "value": "21S062189",
+          "confidence": 0.6071,
+          "source": "ai",
+          "raw": "5218062189"
+        },
+        "marca": {
+          "value": "PH250",
+          "confidence": 0.5388,
+          "source": "ai",
+          "raw": "PH250"
+        },
+        "anio_fabricacion": {
+          "value": 2021,
+          "confidence": null,
+          "source": "catalog",
+          "raw": null
+        },
+        "fecha_fabricacion": {
+          "value": "2021-03",
+          "confidence": null,
+          "source": "catalog",
+          "raw": null
+        },
+        "procedencia": {
+          "value": "CHN",
+          "confidence": null,
+          "source": "catalog",
+          "raw": null
+        },
+        "tipo_gas": {
+          "value": "CO2",
+          "confidence": null,
+          "source": "catalog",
+          "raw": null
+        },
+        "unidad_medida": {
+          "value": "KG",
+          "confidence": null,
+          "source": "catalog",
+          "raw": null
+        },
+        "m3": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "litros": {
+          "value": 40.0,
+          "confidence": null,
+          "source": "catalog",
+          "raw": null
+        },
+        "peso": {
+          "value": 48.0,
+          "confidence": null,
+          "source": "catalog",
+          "raw": null
+        },
+        "ancho_diametro": {
+          "value": 21.0,
+          "confidence": null,
+          "source": "catalog",
+          "raw": null
+        },
+        "largo_altura": {
+          "value": 130.0,
+          "confidence": null,
+          "source": "catalog",
+          "raw": null
+        },
+        "color": {
+          "value": "gris",
+          "confidence": null,
+          "source": "catalog",
+          "raw": null
+        },
+        "ph": {
+          "value": "2026-07",
+          "confidence": null,
+          "source": "catalog",
+          "raw": null
+        },
+        "ph_periodicidad_anios": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        }
+      },
+      "match": {
+        "status": "matched",
+        "resolved_serial": "21S062189",
+        "candidates": [
+          {
+            "numero_serie": "21S062189",
+            "distance": 2,
+            "score": 0.8
+          },
+          {
+            "numero_serie": "21S061102",
+            "distance": 4,
+            "score": 0.55
+          },
+          {
+            "numero_serie": "21S062014",
+            "distance": 5,
+            "score": 0.5
+          },
+          {
+            "numero_serie": "001029",
+            "distance": 6,
+            "score": 0.4
+          },
+          {
+            "numero_serie": "20K622093",
+            "distance": 6,
+            "score": 0.4
+          }
+        ]
+      },
+      "backend_match": {
+        "found": false,
+        "queried": false,
+        "error": null
+      },
+      "detections": [
+        {
+          "label": "marking_area",
+          "confidence": 0.7354000210762024,
+          "box": {
+            "x1": 258.3333435058594,
+            "y1": 871.6666870117188,
+            "x2": 808.3333129882812,
+            "y2": 1108.3333740234375
+          }
+        },
+        {
+          "label": "serial_text",
+          "confidence": 0.5054000020027161,
+          "box": {
+            "x1": 351.0,
+            "y1": 918.0,
+            "x2": 666.3333129882812,
+            "y2": 992.6666870117188
+          }
+        }
+      ],
+      "ocr_lines": [
+        {
+          "text": "25219",
+          "confidence": 0.7582029402256012,
+          "box": {
+            "x1": 377.0,
+            "y1": 922.0,
+            "x2": 607.0,
+            "y2": 1002.0
+          },
+          "source_region": "serial_text"
+        },
+        {
+          "text": "0621",
+          "confidence": 0.9962090104818344,
+          "box": {
+            "x1": 590.0,
+            "y1": 949.0,
+            "x2": 693.0,
+            "y2": 991.0
+          },
+          "source_region": "serial_text"
+        },
+        {
+          "text": "89",
+          "confidence": 0.9972379505634308,
+          "box": {
+            "x1": 690.0,
+            "y1": 938.0,
+            "x2": 752.0,
+            "y2": 977.0
+          },
+          "source_region": "serial_text"
+        },
+        {
+          "text": "PH250",
+          "confidence": 0.9797183871269226,
+          "box": {
+            "x1": 630.0,
+            "y1": 982.0,
+            "x2": 760.0,
+            "y2": 1041.0
+          },
+          "source_region": "serial_text"
+        },
+        {
+          "text": "09-1",
+          "confidence": 0.6111363992094994,
+          "box": {
+            "x1": 352.0,
+            "y1": 1011.0,
+            "x2": 430.0,
+            "y2": 1066.0
+          },
+          "source_region": "serial_text"
+        },
+        {
+          "text": "2021/03",
+          "confidence": 0.8839191836970193,
+          "box": {
+            "x1": 465.3333435058594,
+            "y1": 1054.6666870117188,
+            "x2": 766.3333435058594,
+            "y2": 1117.6666870117188
+          },
+          "source_region": "marking_area"
+        },
+        {
+          "text": "5218062189",
+          "confidence": 0.9063950777053833,
+          "box": {
+            "x1": 365.4598083496094,
+            "y1": 923.8709106445312,
+            "x2": 710.330322265625,
+            "y2": 982.7096557617188
+          },
+          "source_region": null
+        },
+        {
+          "text": "2021/03",
+          "confidence": 0.9062921234539577,
+          "box": {
+            "x1": 390.1669616699219,
+            "y1": 1019.8709106445312,
+            "x2": 681.5053100585938,
+            "y2": 1080.774169921875
+          },
+          "source_region": null
+        }
+      ],
+      "image_quality": {
+        "width": 1153,
+        "height": 2048,
+        "blur_score": 743.56,
+        "brightness": 94.81,
+        "contrast": 72.98,
+        "is_acceptable": true
+      },
+      "warnings": []
+    }
+  },
+  {
+    "imagen": "datasets/raw/Cilindro_016/3.Cerca/IMG_20260903_161657.jpg",
+    "esperado": "Y7859021",
+    "respuesta": {
+      "success": true,
+      "request_id": "demo-2",
+      "service_version": "1.0.0",
+      "model_version": "detector:onnx:detector.onnx|ocr:rapid:onnxruntime|parser:1.0.0",
+      "processing_time_ms": 700,
+      "requires_manual_confirmation": true,
+      "review_reasons": [
+        "no_serial_detected"
+      ],
+      "data": {
+        "numero_serie": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "marca": {
+          "value": "LINDE",
+          "confidence": 0.5434,
+          "source": "ai",
+          "raw": "Linde"
+        },
+        "anio_fabricacion": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "fecha_fabricacion": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "procedencia": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "tipo_gas": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "unidad_medida": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "m3": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "litros": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "peso": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "ancho_diametro": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "largo_altura": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "color": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "ph": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "ph_periodicidad_anios": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        }
+      },
+      "match": {
+        "status": "not_attempted",
+        "resolved_serial": null,
+        "candidates": []
+      },
+      "backend_match": {
+        "found": false,
+        "queried": false,
+        "error": null
+      },
+      "detections": [],
+      "ocr_lines": [
+        {
+          "text": "Linde",
+          "confidence": 0.9879612803459168,
+          "box": {
+            "x1": 632.091064453125,
+            "y1": 787.6128540039062,
+            "x2": 691.7999877929688,
+            "y2": 820.6451416015625
+          },
+          "source_region": null
+        },
+        {
+          "text": "Stargol",
+          "confidence": 0.957398636000497,
+          "box": {
+            "x1": 637.2383422851562,
+            "y1": 811.3547973632812,
+            "x2": 678.4169311523438,
+            "y2": 828.9031982421875
+          },
+          "source_region": null
+        }
+      ],
+      "image_quality": {
+        "width": 1153,
+        "height": 2048,
+        "blur_score": 357.26,
+        "brightness": 50.16,
+        "contrast": 49.15,
+        "is_acceptable": true
+      },
+      "warnings": []
+    }
+  },
+  {
+    "imagen": "datasets/raw/Cilindro_022/3.Cerca/IMG_20260903_181321.jpg",
+    "esperado": "Y4523012",
+    "respuesta": {
+      "success": true,
+      "request_id": "demo-3",
+      "service_version": "1.0.0",
+      "model_version": "detector:onnx:detector.onnx|ocr:rapid:onnxruntime|parser:1.0.0",
+      "processing_time_ms": 597,
+      "requires_manual_confirmation": true,
+      "review_reasons": [
+        "low_ocr_confidence"
+      ],
+      "data": {
+        "numero_serie": {
+          "value": "Y4523012",
+          "confidence": 0.7131,
+          "source": "ai",
+          "raw": "1￥4523012"
+        },
+        "marca": {
+          "value": "JD",
+          "confidence": null,
+          "source": "catalog",
+          "raw": null
+        },
+        "anio_fabricacion": {
+          "value": 2017,
+          "confidence": null,
+          "source": "catalog",
+          "raw": null
+        },
+        "fecha_fabricacion": {
+          "value": "2017-05",
+          "confidence": null,
+          "source": "catalog",
+          "raw": null
+        },
+        "procedencia": {
+          "value": "CHN",
+          "confidence": null,
+          "source": "catalog",
+          "raw": null
+        },
+        "tipo_gas": {
+          "value": "O2",
+          "confidence": null,
+          "source": "catalog",
+          "raw": null
+        },
+        "unidad_medida": {
+          "value": "M3",
+          "confidence": null,
+          "source": "catalog",
+          "raw": null
+        },
+        "m3": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "litros": {
+          "value": 52.6,
+          "confidence": null,
+          "source": "catalog",
+          "raw": null
+        },
+        "peso": {
+          "value": 55.2,
+          "confidence": null,
+          "source": "catalog",
+          "raw": null
+        },
+        "ancho_diametro": {
+          "value": 24.0,
+          "confidence": null,
+          "source": "catalog",
+          "raw": null
+        },
+        "largo_altura": {
+          "value": 148.0,
+          "confidence": null,
+          "source": "catalog",
+          "raw": null
+        },
+        "color": {
+          "value": "verde",
+          "confidence": null,
+          "source": "catalog",
+          "raw": null
+        },
+        "ph": {
+          "value": "2023-02",
+          "confidence": null,
+          "source": "catalog",
+          "raw": null
+        },
+        "ph_periodicidad_anios": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        }
+      },
+      "match": {
+        "status": "matched",
+        "resolved_serial": "Y4523012",
+        "candidates": [
+          {
+            "numero_serie": "Y4523012",
+            "distance": 1,
+            "score": 0.875
+          },
+          {
+            "numero_serie": "K5738012",
+            "distance": 4,
+            "score": 0.5
+          },
+          {
+            "numero_serie": "K5738132",
+            "distance": 4,
+            "score": 0.4375
+          },
+          {
+            "numero_serie": "42705",
+            "distance": 5,
+            "score": 0.375
+          },
+          {
+            "numero_serie": "K5732121",
+            "distance": 5,
+            "score": 0.375
+          }
+        ]
+      },
+      "backend_match": {
+        "found": false,
+        "queried": false,
+        "error": null
+      },
+      "detections": [
+        {
+          "label": "marking_area",
+          "confidence": 0.6836000084877014,
+          "box": {
+            "x1": 224.1666717529297,
+            "y1": 985.0,
+            "x2": 709.1666870117188,
+            "y2": 1244.3333740234375
+          }
+        },
+        {
+          "label": "serial_text",
+          "confidence": 0.5321999788284302,
+          "box": {
+            "x1": 326.6666564941406,
+            "y1": 1037.6666259765625,
+            "x2": 625.3333129882812,
+            "y2": 1123.6666259765625
+          }
+        }
+      ],
+      "ocr_lines": [
+        {
+          "text": "1K452132612",
+          "confidence": 0.771515510298989,
+          "box": {
+            "x1": 375.6666564941406,
+            "y1": 1064.6666259765625,
+            "x2": 661.6666564941406,
+            "y2": 1124.6666259765625
+          },
+          "source_region": "serial_text"
+        },
+        {
+          "text": "1￥4523012",
+          "confidence": 0.8582500881618924,
+          "box": {
+            "x1": 418.1666717529297,
+            "y1": 1102.0,
+            "x2": 675.1666717529297,
+            "y2": 1143.0
+          },
+          "source_region": "marking_area"
+        }
+      ],
+      "image_quality": {
+        "width": 1153,
+        "height": 2048,
+        "blur_score": 301.12,
+        "brightness": 101.61,
+        "contrast": 80.25,
+        "is_acceptable": true
+      },
+      "warnings": []
+    }
+  },
+  {
+    "imagen": "datasets/raw/Cilindro_027/3.Cerca/IMG_20260904_102953.jpg",
+    "esperado": "21K073075",
+    "respuesta": {
+      "success": true,
+      "request_id": "demo-4",
+      "service_version": "1.0.0",
+      "model_version": "detector:onnx:detector.onnx|ocr:rapid:onnxruntime|parser:1.0.0",
+      "processing_time_ms": 605,
+      "requires_manual_confirmation": true,
+      "review_reasons": [
+        "serial_not_in_catalog"
+      ],
+      "data": {
+        "numero_serie": {
+          "value": "1892847",
+          "confidence": 1.0,
+          "source": "ai",
+          "raw": "1892847"
+        },
+        "marca": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "anio_fabricacion": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "fecha_fabricacion": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "procedencia": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "tipo_gas": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "unidad_medida": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "m3": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "litros": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "peso": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "ancho_diametro": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "largo_altura": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "color": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "ph": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "ph_periodicidad_anios": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        }
+      },
+      "match": {
+        "status": "not_found",
+        "resolved_serial": null,
+        "candidates": [
+          {
+            "numero_serie": "001087",
+            "distance": 4,
+            "score": 0.3571
+          },
+          {
+            "numero_serie": "171392042",
+            "distance": 4,
+            "score": 0.3571
+          },
+          {
+            "numero_serie": "610747",
+            "distance": 4,
+            "score": 0.3571
+          },
+          {
+            "numero_serie": "804",
+            "distance": 4,
+            "score": 0.3571
+          },
+          {
+            "numero_serie": "612825",
+            "distance": 5,
+            "score": 0.2857
+          }
+        ]
+      },
+      "backend_match": {
+        "found": false,
+        "queried": false,
+        "error": null
+      },
+      "detections": [],
+      "ocr_lines": [
+        {
+          "text": "ELECTRANETLNRPRA",
+          "confidence": 0.6636088881641626,
+          "box": {
+            "x1": 568.2642822265625,
+            "y1": 276.6451416015625,
+            "x2": 644.4446411132812,
+            "y2": 299.3548278808594
+          },
+          "source_region": null
+        },
+        {
+          "text": "1892847",
+          "confidence": 0.9992221508707319,
+          "box": {
+            "x1": 576.5,
+            "y1": 289.0322570800781,
+            "x2": 637.2383422851562,
+            "y2": 317.93548583984375
+          },
+          "source_region": null
+        },
+        {
+          "text": "RULLORETAL",
+          "confidence": 0.8649775207042694,
+          "box": {
+            "x1": 583.7062377929688,
+            "y1": 307.6128845214844,
+            "x2": 632.091064453125,
+            "y2": 322.06451416015625
+          },
+          "source_region": null
+        }
+      ],
+      "image_quality": {
+        "width": 1153,
+        "height": 2048,
+        "blur_score": 134.87,
+        "brightness": 79.79,
+        "contrast": 65.01,
+        "is_acceptable": true
+      },
+      "warnings": []
+    }
+  },
+  {
+    "imagen": "datasets/raw/Cilindro_029/3.Cerca/IMG_20260904_103800.jpg",
+    "esperado": "H168022",
+    "respuesta": {
+      "success": true,
+      "request_id": "demo-5",
+      "service_version": "1.0.0",
+      "model_version": "detector:onnx:detector.onnx|ocr:rapid:onnxruntime|parser:1.0.0",
+      "processing_time_ms": 648,
+      "requires_manual_confirmation": true,
+      "review_reasons": [
+        "serial_not_in_catalog"
+      ],
+      "data": {
+        "numero_serie": {
+          "value": "17680",
+          "confidence": 0.9677,
+          "source": "ai",
+          "raw": "17680"
+        },
+        "marca": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "anio_fabricacion": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "fecha_fabricacion": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "procedencia": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "tipo_gas": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "unidad_medida": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "m3": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "litros": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "peso": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "ancho_diametro": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "largo_altura": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "color": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "ph": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "ph_periodicidad_anios": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        }
+      },
+      "match": {
+        "status": "not_found",
+        "resolved_serial": null,
+        "candidates": [
+          {
+            "numero_serie": "20640",
+            "distance": 3,
+            "score": 0.4
+          },
+          {
+            "numero_serie": "30692",
+            "distance": 4,
+            "score": 0.2
+          },
+          {
+            "numero_serie": "610782",
+            "distance": 4,
+            "score": 0.2
+          },
+          {
+            "numero_serie": "804",
+            "distance": 4,
+            "score": 0.2
+          },
+          {
+            "numero_serie": "H168022",
+            "distance": 4,
+            "score": 0.2
+          }
+        ]
+      },
+      "backend_match": {
+        "found": false,
+        "queried": false,
+        "error": null
+      },
+      "detections": [],
+      "ocr_lines": [
+        {
+          "text": "17680",
+          "confidence": 0.8432557344436645,
+          "box": {
+            "x1": 532.2330322265625,
+            "y1": 783.4838256835938,
+            "x2": 665.0338745117188,
+            "y2": 823.7418823242188
+          },
+          "source_region": null
+        }
+      ],
+      "image_quality": {
+        "width": 1153,
+        "height": 2048,
+        "blur_score": 345.52,
+        "brightness": 70.93,
+        "contrast": 60.97,
+        "is_acceptable": true
+      },
+      "warnings": []
+    }
+  },
+  {
+    "imagen": "datasets/raw/Cilindro_034/3.Cerca/IMG_20260904_112026.jpg",
+    "esperado": "171392042",
+    "respuesta": {
+      "success": true,
+      "request_id": "demo-6",
+      "service_version": "1.0.0",
+      "model_version": "detector:onnx:detector.onnx|ocr:rapid:onnxruntime|parser:1.0.0",
+      "processing_time_ms": 1310,
+      "requires_manual_confirmation": true,
+      "review_reasons": [
+        "serial_not_in_catalog"
+      ],
+      "data": {
+        "numero_serie": {
+          "value": "201707",
+          "confidence": 0.8549,
+          "source": "ai",
+          "raw": "2017/07"
+        },
+        "marca": {
+          "value": "NO",
+          "confidence": 0.4244,
+          "source": "ai",
+          "raw": "NO RETIRARESTETOU"
+        },
+        "anio_fabricacion": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "fecha_fabricacion": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "procedencia": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "tipo_gas": {
+          "value": "AR",
+          "confidence": 0.7805,
+          "source": "ai",
+          "raw": "Argonindustal"
+        },
+        "unidad_medida": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "m3": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "litros": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "peso": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "ancho_diametro": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "largo_altura": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "color": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "ph": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        },
+        "ph_periodicidad_anios": {
+          "value": null,
+          "confidence": null,
+          "source": "unknown",
+          "raw": null
+        }
+      },
+      "match": {
+        "status": "not_found",
+        "resolved_serial": null,
+        "candidates": [
+          {
+            "numero_serie": "001087",
+            "distance": 2,
+            "score": 0.5833
+          },
+          {
+            "numero_serie": "20640",
+            "distance": 3,
+            "score": 0.5
+          },
+          {
+            "numero_serie": "001029",
+            "distance": 4,
+            "score": 0.3333
+          },
+          {
+            "numero_serie": "20X169037",
+            "distance": 4,
+            "score": 0.3333
+          },
+          {
+            "numero_serie": "26K013037",
+            "distance": 4,
+            "score": 0.3333
+          }
+        ]
+      },
+      "backend_match": {
+        "found": false,
+        "queried": false,
+        "error": null
+      },
+      "detections": [
+        {
+          "label": "marking_area",
+          "confidence": 0.4004000127315521,
+          "box": {
+            "x1": 227.5,
+            "y1": 1106.6666259765625,
+            "x2": 899.1666870117188,
+            "y2": 1509.3333740234375
+          }
+        }
+      ],
+      "ocr_lines": [
+        {
+          "text": "CG32TGQ",
+          "confidence": 0.927990334374564,
+          "box": {
+            "x1": 765.5,
+            "y1": 1217.6666259765625,
+            "x2": 835.5,
+            "y2": 1245.6666259765625
+          },
+          "source_region": "marking_area"
+        },
+        {
+          "text": "161048355",
+          "confidence": 0.8648092349370321,
+          "box": {
+            "x1": 326.5,
+            "y1": 1271.6666259765625,
+            "x2": 437.5,
+            "y2": 1355.6666259765625
+          },
+          "source_region": "marking_area"
+        },
+        {
+          "text": "TRUJILLO",
+          "confidence": 0.9295632615685463,
+          "box": {
+            "x1": 314.5,
+            "y1": 1315.6666259765625,
+            "x2": 410.5,
+            "y2": 1382.6666259765625
+          },
+          "source_region": "marking_area"
+        },
+        {
+          "text": "Argonindustal",
+          "confidence": 0.8672343286184164,
+          "box": {
+            "x1": 886.5,
+            "y1": 1342.6666259765625,
+            "x2": 976.5,
+            "y2": 1405.6666259765625
+          },
+          "source_region": "marking_area"
+        },
+        {
+          "text": "A",
+          "confidence": 0.9540649056434631,
+          "box": {
+            "x1": 926.5,
+            "y1": 1386.6666259765625,
+            "x2": 946.5,
+            "y2": 1401.6666259765625
+          },
+          "source_region": "marking_area"
+        },
+        {
+          "text": "2017/07",
+          "confidence": 0.9488634467124939,
+          "box": {
+            "x1": 420.5,
+            "y1": 1413.6666259765625,
+            "x2": 721.5,
+            "y2": 1504.6666259765625
+          },
+          "source_region": "marking_area"
+        },
+        {
+          "text": "UN1006",
+          "confidence": 0.9922753473122915,
+          "box": {
+            "x1": 914.5,
+            "y1": 1390.6666259765625,
+            "x2": 965.5,
+            "y2": 1430.6666259765625
+          },
+          "source_region": "marking_area"
+        },
+        {
+          "text": "NO RETIRARESTETOU",
+          "confidence": 0.7716234273770276,
+          "box": {
+            "x1": 898.5,
+            "y1": 1405.6666259765625,
+            "x2": 982.5,
+            "y2": 1461.6666259765625
+          },
+          "source_region": "marking_area"
+        },
+        {
+          "text": "RAETL",
+          "confidence": 0.7518648505210876,
+          "box": {
+            "x1": 404.5,
+            "y1": 1579.6666259765625,
+            "x2": 839.5,
+            "y2": 1729.6666259765625
+          },
+          "source_region": "marking_area"
+        }
+      ],
+      "image_quality": {
+        "width": 1153,
+        "height": 2048,
+        "blur_score": 506.27,
+        "brightness": 48.66,
+        "contrast": 43.91,
+        "is_acceptable": true
+      },
+      "warnings": []
+    }
+  }
+]

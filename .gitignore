@@ -1,0 +1,59 @@
+# --- Entorno ---------------------------------------------------------------
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.DS_Store
+
+# Configuración local: puede contener la clave del backend principal.
+# La plantilla versionada es .env.example.
+.env
+
+# --- Datos -----------------------------------------------------------------
+# Las fotografías originales (1,5 GB) no van al repositorio. Se importan con
+# `make import` desde su ubicación original.
+datasets/raw/
+datasets/interim/
+datasets/processed/
+datasets/audit/
+
+# Derivados que se regeneran con un comando, así que no se versionan:
+#   datasets/ocr/        recortes de reconocimiento
+#   datasets/ocr_synth/  8.000 muestras sintéticas
+#   datasets/yolo/       enlaces y caches para ultralytics
+datasets/ocr/
+datasets/ocr_synth/
+datasets/yolo/
+
+# Sí se versionan, porque cuestan horas de cómputo y son pequeños:
+#   datasets/labels/          anotaciones de caja (326 archivos, 1,3 MB)
+#   datasets/catalog.json     inventario normalizado
+#   datasets/ground_truth.csv verdad de campo
+
+# --- Modelos ---------------------------------------------------------------
+# Los pesos se distribuyen aparte; el repositorio guarda cómo obtenerlos.
+models/*.onnx
+models/*.pt
+models/*.classes.json
+models/runs/
+runs/
+
+# Experimento descartado: el reconocedor quedó por debajo del OCR genérico.
+# Ver docs/RECONOCEDOR.md.
+models/recognizer/*.pt
+models/recognizer/*.onnx
+models/recognizer/*.onnx.data
+
+# Los informes de métricas (models/*.json) SÍ se versionan: son la evidencia
+# de los resultados publicados en la documentación.
+!models/.gitkeep
+
+# --- Documentación ---------------------------------------------------------
+docs-site/node_modules/
+docs-site/dist/
+docs-site/.astro/
+
+.claude

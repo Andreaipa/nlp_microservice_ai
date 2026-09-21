@@ -1,0 +1,11 @@
+# Dependencias de ENTRENAMIENTO. No deben instalarse en producción.
+-r base.txt
+ultralytics==8.4.157
+torch>=2.4
+torchvision>=0.19
+onnx>=1.17
+onnxslim>=0.1.48
+# Necesario para torch.onnx.export en torch >= 2.6
+onnxscript>=0.1
+matplotlib>=3.9
+pandas>=2.2

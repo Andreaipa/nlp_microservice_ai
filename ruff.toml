@@ -1,0 +1,21 @@
+line-length = 100
+target-version = "py312"
+
+[lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "C4", "SIM"]
+ignore = [
+    # Depends() en la firma es el idioma de FastAPI, no un valor mutable por defecto.
+    "B008",
+    # Los errores de dominio ya se distinguen por su clase base y su `code`.
+    "N818",
+    # `class X(str, Enum)` es el patrón establecido en FastAPI y Pydantic para
+    # enums serializables, y funciona desde Python 3.10. StrEnum no aporta nada
+    # aquí y reduciría la compatibilidad.
+    "UP042",
+    # `Generic[T]` es la forma documentada de los modelos genéricos de Pydantic v2.
+    # La sintaxis de PEP 695 tiene soporte más reciente y no merece el riesgo.
+    "UP046",
+]
+
+[lint.per-file-ignores]
+"tests/*" = ["E501"]

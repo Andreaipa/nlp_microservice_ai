@@ -1,0 +1,28 @@
+{
+  "name": "docs-site",
+  "type": "module",
+  "version": "0.0.1",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "format": "prettier --write --ignore-path ../.prettierignore \"../**/*.{js,mjs,ts,css,astro,md,mdx,json,yml,yaml}\"",
+    "format:check": "prettier --check --ignore-path ../.prettierignore \"../**/*.{js,mjs,ts,css,astro,md,mdx,json,yml,yaml}\""
+  },
+  "dependencies": {
+    "@astrojs/starlight": "^0.42.2",
+    "astro": "^7.3.3",
+    "starlight-openapi": "^0.26.2"
+  },
+  "allowScripts": {
+    "esbuild": true
+  },
+  "devDependencies": {
+    "prettier": "^3.9.8",
+    "prettier-plugin-astro": "^1.0.1"
+  }
+}

@@ -1,0 +1,39 @@
+services:
+  ai-cylinder-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # rapid (ligero, recomendado) | paddle (más cobertura, ~1,6 GB) | none
+        OCR: '${OCR_ENGINE:-rapid}'
+    image: ai-cylinder-service:1.0.0
+    container_name: ai-cylinder-service
+    restart: unless-stopped
+    ports:
+      - '${AI_PORT:-8000}:8000'
+    env_file:
+      - .env
+    environment:
+      AI_ENVIRONMENT: ${AI_ENVIRONMENT:-dev}
+      AI_DETECTOR_MODEL_PATH: /app/models/detector.onnx
+      AI_CATALOG_PATH: /app/datasets/catalog.json
+      AI_AUDIT_DIR: /app/datasets/audit
+    volumes:
+      # El modelo y el catálogo se montan: cambiarlos no exige reconstruir.
+      - ./models:/app/models:ro
+      - ./datasets/catalog.json:/app/datasets/catalog.json:ro
+      - ai-audit:/app/datasets/audit
+    healthcheck:
+      test: ['CMD', 'curl', '-fsS', 'http://localhost:8000/api/v1/health']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          # Con RapidOCR el proceso ronda los 400 MB; con PaddleOCR, 1,5 GB.
+          memory: ${AI_MEMORY_LIMIT:-2G}
+
+volumes:
+  ai-audit:

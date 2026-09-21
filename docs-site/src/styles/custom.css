@@ -1,0 +1,23 @@
+/* Paleta sobria, pensada para lectura larga de documentación técnica. */
+:root {
+  --sl-color-accent-low: #12283a;
+  --sl-color-accent: #2b6cb0;
+  --sl-color-accent-high: #b6d4f0;
+}
+
+:root[data-theme='light'] {
+  --sl-color-accent-low: #cfe2f3;
+  --sl-color-accent: #1c5288;
+  --sl-color-accent-high: #12283a;
+}
+
+/* Las tablas de métricas son el contenido más consultado: conviene que se
+   lean sin esfuerzo. */
+.sl-markdown-content table {
+  font-variant-numeric: tabular-nums;
+  width: 100%;
+}
+
+.sl-markdown-content table th {
+  text-align: left;
+}

@@ -1,0 +1,32 @@
+# Prettier se ocupa del sitio de documentación y del Markdown.
+# El código Python lo formatea ruff (ver ruff.toml).
+
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+node_modules/
+docs-site/dist/
+docs-site/.astro/
+
+# Esquema generado por training/export_openapi.py: su formato lo decide el
+# exportador, y el CI comprueba que coincide byte a byte.
+docs/openapi.json
+
+# Páginas generadas por training/sync_docs.py a partir de docs/. Formatearlas
+# aquí las desincronizaría de su fuente y haría fallar `sync_docs.py --check`.
+# El Markdown original sí se formatea: basta con corregirlo en docs/.
+docs-site/src/content/docs/guias/puesta-en-marcha.md
+docs-site/src/content/docs/sistema/arquitectura.md
+docs-site/src/content/docs/sistema/rendimiento.md
+docs-site/src/content/docs/sistema/umbrales.md
+docs-site/src/content/docs/sistema/integracion.md
+docs-site/src/content/docs/datos/dataset.md
+docs-site/src/content/docs/datos/protocolo-captura.md
+docs-site/src/content/docs/datos/anotacion.md
+docs-site/src/content/docs/datos/reconocedor.md
+docs-site/src/content/docs/referencia/diagnostico.md
+
+# Datos y modelos.
+datasets/
+models/

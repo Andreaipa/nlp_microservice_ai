@@ -1,0 +1,1043 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AI Cylinder Service",
+    "description": "\nMicroservicio de visión artificial para la identificación de cilindros\nindustriales a partir de una fotografía del troquelado de su collarín.\n\n## Qué hace y qué no\n\nResponde a una sola pregunta: **¿qué información puedo identificar en esta\nimagen?**. No decide nada de negocio. El backend principal es quien determina\nqué movimiento registrar con esa información.\n\n```\nimagen → detección de regiones → recorte → realce → OCR\n       → normalización → resolución contra el inventario → JSON\n```\n\n## Cómo interpretar la respuesta\n\nEl campo que gobierna la decisión es **`requires_manual_confirmation`**.\nCuando es `true`, el backend no debe registrar nada automáticamente:\n`review_reasons` explica por qué y `match.candidates` ofrece los cilindros\nmás parecidos para que el operario elija.\n\nCada dato llega como `{value, confidence, source}`. El campo `source` indica\nde dónde salió:\n\n| source | significado |\n|---|---|\n| `ai` | leído de la fotografía |\n| `catalog` | completado desde el inventario local |\n| `backend` | aportado por el backend principal |\n| `manual` | confirmado por una persona |\n| `unknown` | no se pudo determinar |\n\nUn campo con `value: null` y `source: \"unknown\"` significa que no se pudo\ndeterminar. **El servicio nunca rellena huecos por verosimilitud.**\n\n## Estado actual del reconocimiento\n\nMedido sobre 90 fotografías de cilindros no vistos en el entrenamiento:\n**22% de identificación correcta en general y 60% en tomas cercanas al\ncollarín**, con **0% de errores silenciosos** y una latencia mediana de\n**667 ms**.\n\nLa calibración empírica de umbrales concluyó que no existe un punto de corte\nque permita aceptar lecturas automáticamente con menos del 1% de error, de\nmodo que el servicio **siempre pide confirmación**. Es un asistente de\nregistro, no un lector autónomo.\n",
+    "contact": {
+      "name": "Documentación del proyecto",
+      "url": "https://localhost:4321/"
+    },
+    "license": {
+      "name": "Uso interno"
+    },
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/cylinders/analyze": {
+      "post": {
+        "tags": [
+          "cylinders"
+        ],
+        "summary": "Analiza una fotografía de cilindro",
+        "description": "Recibe una fotografía y devuelve la información que pudo identificarse en\nella, con su nivel de confianza y el origen de cada dato.\n\nEl microservicio no toma decisiones de negocio: informa de lo que observó.\nCuando la lectura no es concluyente marca `requires_manual_confirmation` y\ndetalla el motivo en `review_reasons`, en lugar de devolver un valor dudoso\ncomo si fuera cierto.\n\n### La fotografía importa más que cualquier parámetro\n\n| Encuadre | Acierto medido |\n|---|---|\n| Cerca del troquelado | **60%** |\n| De frente, lejos o en penumbra | 13-20% |\n\nLa aplicación cliente debería guiar al operario a encuadrar **el collarín**\nde cerca. Es la diferencia entre que el sistema sirva y que no.\n\n### Motivos de revisión\n\n| `review_reasons` | Qué mostrar al operario |\n|---|---|\n| `no_serial_detected` | \"No se distingue el número. Acérquese al collarín.\" |\n| `low_ocr_confidence` | \"Lectura poco clara. Confirme el número.\" |\n| `ambiguous_catalog_match` | Ofrecer los candidatos de `match.candidates` |\n| `serial_not_in_catalog` | \"Ese cilindro no está en el inventario.\" |\n| `duplicate_serial_in_catalog` | \"Ese número está en más de un cilindro.\" |\n| `serial_too_short` | \"El número grabado es demasiado corto.\" |\n| `poor_image_quality` | \"Foto movida u oscura. Repítala.\" |\n| `no_detector_model` | Estado del sistema, no del usuario |\n| `thresholds_not_calibrated` | Estado del sistema, no del usuario |\n\n### Cabeceras\n\nEnvíe `X-Request-ID` para poder rastrear una incidencia de punta a punta: el\nservicio lo propaga a sus registros y lo devuelve en la respuesta.",
+        "operationId": "analyze_cylinder_api_v1_cylinders_analyze_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_analyze_cylinder_api_v1_cylinders_analyze_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyzeResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Imagen demasiado grande",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorPayload"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Tipo de archivo no admitido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorPayload"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La imagen no se pudo decodificar",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorPayload"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Vivacidad del proceso",
+        "description": "Responde mientras el proceso esté vivo. No comprueba dependencias.",
+        "operationId": "health_api_v1_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ready": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Disponibilidad real de los componentes",
+        "description": "Comprueba si el servicio puede atender análisis con garantías.\n\nEl detector heurístico cuenta como no listo: el servicio responde, pero sin\nmodelo entrenado, y un orquestador debe poder distinguir ese estado.",
+        "operationId": "ready_api_v1_ready_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadinessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/version": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Versiones en uso",
+        "operationId": "version_api_v1_version_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AnalyzeResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "default": true
+          },
+          "request_id": {
+            "type": "string",
+            "title": "Request Id"
+          },
+          "service_version": {
+            "type": "string",
+            "title": "Service Version"
+          },
+          "model_version": {
+            "type": "string",
+            "title": "Model Version"
+          },
+          "processing_time_ms": {
+            "type": "integer",
+            "title": "Processing Time Ms"
+          },
+          "requires_manual_confirmation": {
+            "type": "boolean",
+            "title": "Requires Manual Confirmation",
+            "default": false
+          },
+          "review_reasons": {
+            "items": {
+              "$ref": "#/components/schemas/ReviewReason"
+            },
+            "type": "array",
+            "title": "Review Reasons"
+          },
+          "data": {
+            "$ref": "#/components/schemas/CylinderData"
+          },
+          "match": {
+            "$ref": "#/components/schemas/SerialMatch"
+          },
+          "backend_match": {
+            "$ref": "#/components/schemas/BackendMatch"
+          },
+          "detections": {
+            "items": {
+              "$ref": "#/components/schemas/Detection"
+            },
+            "type": "array",
+            "title": "Detections"
+          },
+          "ocr_lines": {
+            "items": {
+              "$ref": "#/components/schemas/OcrLine"
+            },
+            "type": "array",
+            "title": "Ocr Lines"
+          },
+          "image_quality": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ImageQuality"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "request_id",
+          "service_version",
+          "model_version",
+          "processing_time_ms"
+        ],
+        "title": "AnalyzeResponse",
+        "description": "Respuesta del análisis de una fotografía de cilindro.\n\nEl microservicio declara lo que observó; la decisión de negocio es del\nbackend principal.",
+        "examples": [
+          {
+            "description": "Caso habitual: el serial se lee y se resuelve contra el inventario, pero la confianza no alcanza el umbral de aceptación automática. El backend debe pedir confirmación.",
+            "summary": "Identificación con confirmación requerida",
+            "value": {
+              "backend_match": {
+                "found": false,
+                "queried": false
+              },
+              "data": {
+                "m3": {
+                  "source": "unknown"
+                },
+                "marca": {
+                  "source": "catalog",
+                  "value": "JP"
+                },
+                "numero_serie": {
+                  "confidence": 0.61,
+                  "raw": "21S062189",
+                  "source": "ai",
+                  "value": "21S062189"
+                },
+                "peso": {
+                  "source": "catalog",
+                  "value": 48.0
+                },
+                "tipo_gas": {
+                  "source": "catalog",
+                  "value": "CO2"
+                }
+              },
+              "detections": [
+                {
+                  "box": {
+                    "x1": 376.0,
+                    "x2": 866.0,
+                    "y1": 790.0,
+                    "y2": 1085.0
+                  },
+                  "confidence": 0.83,
+                  "label": "marking_area"
+                }
+              ],
+              "match": {
+                "candidates": [
+                  {
+                    "distance": 0,
+                    "numero_serie": "21S062189",
+                    "score": 1.0
+                  }
+                ],
+                "resolved_serial": "21S062189",
+                "status": "matched"
+              },
+              "model_version": "detector:onnx:detector.onnx|ocr:rapid:onnxruntime|parser:1.0.0",
+              "processing_time_ms": 667,
+              "request_id": "8f3a1c9d2b7e4a10",
+              "requires_manual_confirmation": true,
+              "review_reasons": [
+                "low_ocr_confidence"
+              ],
+              "service_version": "1.0.0",
+              "success": true,
+              "warnings": []
+            }
+          },
+          {
+            "description": "La fotografía no permite leer el troquelado: suele ocurrir en tomas lejanas o frontales. La aplicación debe pedir una foto más cercana al collarín.",
+            "summary": "No se pudo leer el número de serie",
+            "value": {
+              "backend_match": {
+                "found": false,
+                "queried": false
+              },
+              "data": {
+                "numero_serie": {
+                  "source": "unknown"
+                }
+              },
+              "detections": [],
+              "match": {
+                "candidates": [],
+                "status": "not_attempted"
+              },
+              "model_version": "detector:onnx:detector.onnx|ocr:rapid:onnxruntime|parser:1.0.0",
+              "processing_time_ms": 700,
+              "request_id": "1b77c0de55aa4f21",
+              "requires_manual_confirmation": true,
+              "review_reasons": [
+                "no_serial_detected",
+                "poor_image_quality"
+              ],
+              "service_version": "1.0.0",
+              "success": true,
+              "warnings": [
+                "El OCR no reconoció texto en la imagen."
+              ]
+            }
+          },
+          {
+            "description": "La lectura es correcta pero el serial está registrado en dos cilindros distintos, así que no identifica. Ocurre con K5738166 en el inventario actual.",
+            "summary": "Serial duplicado en el inventario",
+            "value": {
+              "data": {
+                "numero_serie": {
+                  "confidence": 0.91,
+                  "source": "ai",
+                  "value": "K5738166"
+                }
+              },
+              "match": {
+                "resolved_serial": "K5738166",
+                "status": "matched"
+              },
+              "request_id": "c0ffee1234567890",
+              "requires_manual_confirmation": true,
+              "review_reasons": [
+                "duplicate_serial_in_catalog"
+              ],
+              "success": true,
+              "warnings": [
+                "El serial K5738166 está registrado en 2 cilindros (Cilindro_051, Cilindro_053): no permite distinguirlos."
+              ]
+            }
+          }
+        ]
+      },
+      "BackendMatch": {
+        "properties": {
+          "found": {
+            "type": "boolean",
+            "title": "Found",
+            "default": false
+          },
+          "queried": {
+            "type": "boolean",
+            "title": "Queried",
+            "default": false
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          }
+        },
+        "type": "object",
+        "title": "BackendMatch"
+      },
+      "Body_analyze_cylinder_api_v1_cylinders_analyze_post": {
+        "properties": {
+          "image": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "Image",
+            "description": "Fotografía del cilindro (JPEG, PNG o WEBP)."
+          }
+        },
+        "type": "object",
+        "required": [
+          "image"
+        ],
+        "title": "Body_analyze_cylinder_api_v1_cylinders_analyze_post"
+      },
+      "BoundingBox": {
+        "properties": {
+          "x1": {
+            "type": "number",
+            "title": "X1"
+          },
+          "y1": {
+            "type": "number",
+            "title": "Y1"
+          },
+          "x2": {
+            "type": "number",
+            "title": "X2"
+          },
+          "y2": {
+            "type": "number",
+            "title": "Y2"
+          }
+        },
+        "type": "object",
+        "required": [
+          "x1",
+          "y1",
+          "x2",
+          "y2"
+        ],
+        "title": "BoundingBox",
+        "description": "Caja en píxeles sobre la imagen recibida, tras el reescalado interno."
+      },
+      "CatalogCandidate": {
+        "properties": {
+          "numero_serie": {
+            "type": "string",
+            "title": "Numero Serie"
+          },
+          "distance": {
+            "type": "integer",
+            "title": "Distance",
+            "description": "Distancia de edición contra el texto OCR."
+          },
+          "score": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Score"
+          }
+        },
+        "type": "object",
+        "required": [
+          "numero_serie",
+          "distance",
+          "score"
+        ],
+        "title": "CatalogCandidate",
+        "description": "Candidato del inventario compatible con el texto leído."
+      },
+      "ComponentStatus": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "ready": {
+            "type": "boolean",
+            "title": "Ready"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "ready"
+        ],
+        "title": "ComponentStatus"
+      },
+      "CylinderData": {
+        "properties": {
+          "numero_serie": {
+            "$ref": "#/components/schemas/TracedValue_str_"
+          },
+          "marca": {
+            "$ref": "#/components/schemas/TracedValue_str_"
+          },
+          "anio_fabricacion": {
+            "$ref": "#/components/schemas/TracedValue_int_"
+          },
+          "fecha_fabricacion": {
+            "$ref": "#/components/schemas/TracedValue_str_",
+            "description": "Mes y año de fabricación en formato AAAA-MM."
+          },
+          "procedencia": {
+            "$ref": "#/components/schemas/TracedValue_str_",
+            "description": "Código de país de origen, p. ej. CHN."
+          },
+          "tipo_gas": {
+            "$ref": "#/components/schemas/TracedValue_str_",
+            "description": "Código normalizado del gas: CO2, O2, AR, N2, ACET, MIX."
+          },
+          "unidad_medida": {
+            "$ref": "#/components/schemas/TracedValue_str_",
+            "description": "Unidad en que se comercializa el contenido: KG o M3."
+          },
+          "m3": {
+            "$ref": "#/components/schemas/TracedValue_float_"
+          },
+          "litros": {
+            "$ref": "#/components/schemas/TracedValue_float_",
+            "description": "Capacidad hídrica del envase, en litros."
+          },
+          "peso": {
+            "$ref": "#/components/schemas/TracedValue_float_",
+            "description": "Peso en kilogramos."
+          },
+          "ancho_diametro": {
+            "$ref": "#/components/schemas/TracedValue_float_",
+            "description": "Diámetro en centímetros."
+          },
+          "largo_altura": {
+            "$ref": "#/components/schemas/TracedValue_float_",
+            "description": "Altura en centímetros."
+          },
+          "color": {
+            "$ref": "#/components/schemas/TracedValue_str_"
+          },
+          "ph": {
+            "$ref": "#/components/schemas/TracedValue_str_",
+            "description": "Fecha de la última Prueba Hidrostática en formato AAAA-MM. No es acidez química."
+          },
+          "ph_periodicidad_anios": {
+            "$ref": "#/components/schemas/TracedValue_int_",
+            "description": "Cada cuántos años debe repetirse la Prueba Hidrostática. En las fichas del inventario la mayoría de cilindros declara la periodicidad ('CADA 10 AÑOS') en lugar de la fecha concreta, y son dos datos distintos: de la periodicidad no se deduce cuándo se hizo la última prueba."
+          }
+        },
+        "type": "object",
+        "title": "CylinderData",
+        "description": "Conjunto completo de atributos de un cilindro, cada uno trazado."
+      },
+      "Detection": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label",
+            "description": "cylinder | marking_area | serial_text"
+          },
+          "confidence": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence"
+          },
+          "box": {
+            "$ref": "#/components/schemas/BoundingBox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "confidence",
+          "box"
+        ],
+        "title": "Detection",
+        "description": "Región detectada por el modelo de visión.",
+        "example": {
+          "box": {
+            "x1": 376.0,
+            "x2": 866.0,
+            "y1": 790.0,
+            "y2": 1085.0
+          },
+          "confidence": 0.83,
+          "label": "marking_area"
+        }
+      },
+      "ErrorPayload": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "details": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Details"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "ErrorPayload"
+      },
+      "FieldSource": {
+        "type": "string",
+        "enum": [
+          "ai",
+          "catalog",
+          "backend",
+          "manual",
+          "unknown"
+        ],
+        "title": "FieldSource",
+        "description": "Procedencia de un dato. Permite auditar de dónde salió cada valor."
+      },
+      "HealthResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "service": {
+            "type": "string",
+            "title": "Service"
+          },
+          "environment": {
+            "type": "string",
+            "title": "Environment"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "service",
+          "environment"
+        ],
+        "title": "HealthResponse"
+      },
+      "ImageQuality": {
+        "properties": {
+          "width": {
+            "type": "integer",
+            "title": "Width"
+          },
+          "height": {
+            "type": "integer",
+            "title": "Height"
+          },
+          "blur_score": {
+            "type": "number",
+            "title": "Blur Score",
+            "description": "Varianza del Laplaciano; menor = más borroso."
+          },
+          "brightness": {
+            "type": "number",
+            "title": "Brightness",
+            "description": "Luminancia media 0-255."
+          },
+          "contrast": {
+            "type": "number",
+            "title": "Contrast",
+            "description": "Desviación estándar de luminancia."
+          },
+          "is_acceptable": {
+            "type": "boolean",
+            "title": "Is Acceptable"
+          }
+        },
+        "type": "object",
+        "required": [
+          "width",
+          "height",
+          "blur_score",
+          "brightness",
+          "contrast",
+          "is_acceptable"
+        ],
+        "title": "ImageQuality",
+        "description": "Señales objetivas de calidad, útiles para depurar capturas malas."
+      },
+      "MatchStatus": {
+        "type": "string",
+        "enum": [
+          "matched",
+          "ambiguous",
+          "not_found",
+          "no_catalog",
+          "not_attempted"
+        ],
+        "title": "MatchStatus",
+        "description": "Resultado de resolver el serial leído contra el inventario conocido."
+      },
+      "OcrLine": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "confidence": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence"
+          },
+          "box": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BoundingBox"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source_region": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Region",
+            "description": "Etiqueta de la detección de la que provino el recorte."
+          }
+        },
+        "type": "object",
+        "required": [
+          "text",
+          "confidence"
+        ],
+        "title": "OcrLine",
+        "description": "Una línea reconocida por el motor OCR."
+      },
+      "ReadinessResponse": {
+        "properties": {
+          "ready": {
+            "type": "boolean",
+            "title": "Ready"
+          },
+          "components": {
+            "items": {
+              "$ref": "#/components/schemas/ComponentStatus"
+            },
+            "type": "array",
+            "title": "Components"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ready",
+          "components"
+        ],
+        "title": "ReadinessResponse"
+      },
+      "ReviewReason": {
+        "type": "string",
+        "enum": [
+          "no_serial_detected",
+          "low_ocr_confidence",
+          "serial_format_invalid",
+          "ambiguous_catalog_match",
+          "serial_not_in_catalog",
+          "duplicate_serial_in_catalog",
+          "serial_too_short",
+          "no_detector_model",
+          "thresholds_not_calibrated",
+          "poor_image_quality"
+        ],
+        "title": "ReviewReason",
+        "description": "Motivo por el que un análisis requiere confirmación humana."
+      },
+      "SerialMatch": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/MatchStatus",
+            "default": "not_attempted"
+          },
+          "resolved_serial": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved Serial"
+          },
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/CatalogCandidate"
+            },
+            "type": "array",
+            "title": "Candidates"
+          }
+        },
+        "type": "object",
+        "title": "SerialMatch"
+      },
+      "TracedValue_float_": {
+        "properties": {
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          },
+          "source": {
+            "$ref": "#/components/schemas/FieldSource",
+            "default": "unknown"
+          },
+          "raw": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Raw",
+            "description": "Texto OCR crudo del que se derivó el valor, antes de normalizar."
+          }
+        },
+        "type": "object",
+        "title": "TracedValue[float]",
+        "examples": [
+          {
+            "confidence": 0.94,
+            "raw": "SERIE 19S206055",
+            "source": "ai",
+            "value": "19S206055"
+          },
+          {
+            "source": "catalog",
+            "value": "CO2"
+          },
+          {
+            "source": "unknown"
+          }
+        ]
+      },
+      "TracedValue_int_": {
+        "properties": {
+          "value": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          },
+          "source": {
+            "$ref": "#/components/schemas/FieldSource",
+            "default": "unknown"
+          },
+          "raw": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Raw",
+            "description": "Texto OCR crudo del que se derivó el valor, antes de normalizar."
+          }
+        },
+        "type": "object",
+        "title": "TracedValue[int]",
+        "examples": [
+          {
+            "confidence": 0.94,
+            "raw": "SERIE 19S206055",
+            "source": "ai",
+            "value": "19S206055"
+          },
+          {
+            "source": "catalog",
+            "value": "CO2"
+          },
+          {
+            "source": "unknown"
+          }
+        ]
+      },
+      "TracedValue_str_": {
+        "properties": {
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          },
+          "source": {
+            "$ref": "#/components/schemas/FieldSource",
+            "default": "unknown"
+          },
+          "raw": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Raw",
+            "description": "Texto OCR crudo del que se derivó el valor, antes de normalizar."
+          }
+        },
+        "type": "object",
+        "title": "TracedValue[str]",
+        "examples": [
+          {
+            "confidence": 0.94,
+            "raw": "SERIE 19S206055",
+            "source": "ai",
+            "value": "19S206055"
+          },
+          {
+            "source": "catalog",
+            "value": "CO2"
+          },
+          {
+            "source": "unknown"
+          }
+        ]
+      },
+      "VersionResponse": {
+        "properties": {
+          "service": {
+            "type": "string",
+            "title": "Service"
+          },
+          "service_version": {
+            "type": "string",
+            "title": "Service Version"
+          },
+          "model_version": {
+            "type": "string",
+            "title": "Model Version"
+          },
+          "detector_backend": {
+            "type": "string",
+            "title": "Detector Backend"
+          },
+          "ocr_backend": {
+            "type": "string",
+            "title": "Ocr Backend"
+          },
+          "catalog_size": {
+            "type": "integer",
+            "title": "Catalog Size"
+          },
+          "thresholds_calibrated": {
+            "type": "boolean",
+            "title": "Thresholds Calibrated"
+          }
+        },
+        "type": "object",
+        "required": [
+          "service",
+          "service_version",
+          "model_version",
+          "detector_backend",
+          "ocr_backend",
+          "catalog_size",
+          "thresholds_calibrated"
+        ],
+        "title": "VersionResponse"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "cylinders",
+      "description": "Análisis de fotografías de cilindros."
+    },
+    {
+      "name": "system",
+      "description": "Estado del servicio. `/health` para vivacidad, `/ready` para disponibilidad real de los componentes y `/version` para saber qué modelos están en uso."
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "printWidth": 100,
+  "singleQuote": true,
+  "semi": true,
+  "trailingComma": "es5",
+  "plugins": ["./docs-site/node_modules/prettier-plugin-astro/dist/index.js"],
+  "overrides": [
+    {
+      "files": ["*.astro"],
+      "options": {
+        "parser": "astro"
+      }
+    },
+    {
+      "files": ["*.md", "*.mdx"],
+      "options": {
+        "printWidth": 80,
+        "proseWrap": "preserve"
+      }
+    },
+    {
+      "files": ["*.json"],
+      "options": {
+        "printWidth": 80
+      }
+    }
+  ]
+}

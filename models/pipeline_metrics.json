@@ -1,0 +1,51 @@
+{
+  "imagenes_evaluadas": 90,
+  "resultados": {
+    "derivado_incorrecto": 48,
+    "derivado_correcto": 20,
+    "derivado_sin_lectura": 22
+  },
+  "tasa_acierto_automatico": 0.0,
+  "tasa_acierto_total": 0.2222222222222222,
+  "tasa_error_silencioso": 0.0,
+  "tasa_confirmacion_manual": 1.0,
+  "cer_medio": 0.5366771708683473,
+  "latencia_ms": {
+    "media": 848.0,
+    "mediana": 666.5,
+    "p95": 1356.0
+  },
+  "por_condicion": {
+    "1.Frontal": {
+      "derivado_incorrecto": 7,
+      "derivado_sin_lectura": 5,
+      "derivado_correcto": 3
+    },
+    "2.Diagonal": {
+      "derivado_correcto": 2,
+      "derivado_sin_lectura": 4,
+      "derivado_incorrecto": 9
+    },
+    "3.Cerca": {
+      "derivado_correcto": 9,
+      "derivado_sin_lectura": 1,
+      "derivado_incorrecto": 5
+    },
+    "4.Lejos": {
+      "derivado_correcto": 2,
+      "derivado_sin_lectura": 4,
+      "derivado_incorrecto": 9
+    },
+    "5.Luz normal": {
+      "derivado_incorrecto": 10,
+      "derivado_sin_lectura": 3,
+      "derivado_correcto": 2
+    },
+    "6.Poca luz": {
+      "derivado_incorrecto": 8,
+      "derivado_sin_lectura": 5,
+      "derivado_correcto": 2
+    }
+  },
+  "errores_silenciosos": []
+}

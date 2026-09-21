@@ -1,0 +1,1026 @@
+{
+  "observaciones": 90,
+  "max_silent_error_rate": 0.01,
+  "recomendado": {
+    "umbral": 1.0,
+    "aceptados_automaticamente": 0,
+    "aciertos_automaticos": 0,
+    "errores_silenciosos": 0,
+    "tasa_error_silencioso": 0.0,
+    "tasa_automatizacion": 0.0,
+    "precision_automatica": 1.0,
+    "tasa_confirmacion_manual": 1.0
+  },
+  "curva": [
+    {
+      "umbral": 0.0,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.01,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.02,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.03,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.04,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.05,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.06,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.07,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.08,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.09,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.1,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.11,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.12,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.13,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.14,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.15,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.16,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.17,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.18,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.19,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.2,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.21,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.22,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.23,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.24,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.25,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.26,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.27,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.28,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.29,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.3,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.31,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.32,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.33,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.34,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.35,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.36,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.37,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.38,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.39,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.4,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.41,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.42,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.43,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.44,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.45,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.46,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.47,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.48,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.49,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.5,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.51,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.52,
+      "aceptados_automaticamente": 68,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 48,
+      "tasa_error_silencioso": 0.5333333333333333,
+      "tasa_automatizacion": 0.7555555555555555,
+      "precision_automatica": 0.29411764705882354,
+      "tasa_confirmacion_manual": 0.24444444444444446
+    },
+    {
+      "umbral": 0.53,
+      "aceptados_automaticamente": 67,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 47,
+      "tasa_error_silencioso": 0.5222222222222223,
+      "tasa_automatizacion": 0.7444444444444445,
+      "precision_automatica": 0.29850746268656714,
+      "tasa_confirmacion_manual": 0.25555555555555554
+    },
+    {
+      "umbral": 0.54,
+      "aceptados_automaticamente": 67,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 47,
+      "tasa_error_silencioso": 0.5222222222222223,
+      "tasa_automatizacion": 0.7444444444444445,
+      "precision_automatica": 0.29850746268656714,
+      "tasa_confirmacion_manual": 0.25555555555555554
+    },
+    {
+      "umbral": 0.55,
+      "aceptados_automaticamente": 66,
+      "aciertos_automaticos": 20,
+      "errores_silenciosos": 46,
+      "tasa_error_silencioso": 0.5111111111111111,
+      "tasa_automatizacion": 0.7333333333333333,
+      "precision_automatica": 0.30303030303030304,
+      "tasa_confirmacion_manual": 0.2666666666666667
+    },
+    {
+      "umbral": 0.56,
+      "aceptados_automaticamente": 65,
+      "aciertos_automaticos": 19,
+      "errores_silenciosos": 46,
+      "tasa_error_silencioso": 0.5111111111111111,
+      "tasa_automatizacion": 0.7222222222222222,
+      "precision_automatica": 0.2923076923076923,
+      "tasa_confirmacion_manual": 0.2777777777777778
+    },
+    {
+      "umbral": 0.57,
+      "aceptados_automaticamente": 64,
+      "aciertos_automaticos": 19,
+      "errores_silenciosos": 45,
+      "tasa_error_silencioso": 0.5,
+      "tasa_automatizacion": 0.7111111111111111,
+      "precision_automatica": 0.296875,
+      "tasa_confirmacion_manual": 0.28888888888888886
+    },
+    {
+      "umbral": 0.58,
+      "aceptados_automaticamente": 62,
+      "aciertos_automaticos": 18,
+      "errores_silenciosos": 44,
+      "tasa_error_silencioso": 0.4888888888888889,
+      "tasa_automatizacion": 0.6888888888888889,
+      "precision_automatica": 0.2903225806451613,
+      "tasa_confirmacion_manual": 0.3111111111111111
+    },
+    {
+      "umbral": 0.59,
+      "aceptados_automaticamente": 60,
+      "aciertos_automaticos": 18,
+      "errores_silenciosos": 42,
+      "tasa_error_silencioso": 0.4666666666666667,
+      "tasa_automatizacion": 0.6666666666666666,
+      "precision_automatica": 0.3,
+      "tasa_confirmacion_manual": 0.33333333333333337
+    },
+    {
+      "umbral": 0.6,
+      "aceptados_automaticamente": 60,
+      "aciertos_automaticos": 18,
+      "errores_silenciosos": 42,
+      "tasa_error_silencioso": 0.4666666666666667,
+      "tasa_automatizacion": 0.6666666666666666,
+      "precision_automatica": 0.3,
+      "tasa_confirmacion_manual": 0.33333333333333337
+    },
+    {
+      "umbral": 0.61,
+      "aceptados_automaticamente": 59,
+      "aciertos_automaticos": 17,
+      "errores_silenciosos": 42,
+      "tasa_error_silencioso": 0.4666666666666667,
+      "tasa_automatizacion": 0.6555555555555556,
+      "precision_automatica": 0.288135593220339,
+      "tasa_confirmacion_manual": 0.34444444444444444
+    },
+    {
+      "umbral": 0.62,
+      "aceptados_automaticamente": 58,
+      "aciertos_automaticos": 16,
+      "errores_silenciosos": 42,
+      "tasa_error_silencioso": 0.4666666666666667,
+      "tasa_automatizacion": 0.6444444444444445,
+      "precision_automatica": 0.27586206896551724,
+      "tasa_confirmacion_manual": 0.3555555555555555
+    },
+    {
+      "umbral": 0.63,
+      "aceptados_automaticamente": 58,
+      "aciertos_automaticos": 16,
+      "errores_silenciosos": 42,
+      "tasa_error_silencioso": 0.4666666666666667,
+      "tasa_automatizacion": 0.6444444444444445,
+      "precision_automatica": 0.27586206896551724,
+      "tasa_confirmacion_manual": 0.3555555555555555
+    },
+    {
+      "umbral": 0.64,
+      "aceptados_automaticamente": 56,
+      "aciertos_automaticos": 16,
+      "errores_silenciosos": 40,
+      "tasa_error_silencioso": 0.4444444444444444,
+      "tasa_automatizacion": 0.6222222222222222,
+      "precision_automatica": 0.2857142857142857,
+      "tasa_confirmacion_manual": 0.37777777777777777
+    },
+    {
+      "umbral": 0.65,
+      "aceptados_automaticamente": 53,
+      "aciertos_automaticos": 14,
+      "errores_silenciosos": 39,
+      "tasa_error_silencioso": 0.43333333333333335,
+      "tasa_automatizacion": 0.5888888888888889,
+      "precision_automatica": 0.2641509433962264,
+      "tasa_confirmacion_manual": 0.4111111111111111
+    },
+    {
+      "umbral": 0.66,
+      "aceptados_automaticamente": 53,
+      "aciertos_automaticos": 14,
+      "errores_silenciosos": 39,
+      "tasa_error_silencioso": 0.43333333333333335,
+      "tasa_automatizacion": 0.5888888888888889,
+      "precision_automatica": 0.2641509433962264,
+      "tasa_confirmacion_manual": 0.4111111111111111
+    },
+    {
+      "umbral": 0.67,
+      "aceptados_automaticamente": 52,
+      "aciertos_automaticos": 14,
+      "errores_silenciosos": 38,
+      "tasa_error_silencioso": 0.4222222222222222,
+      "tasa_automatizacion": 0.5777777777777777,
+      "precision_automatica": 0.2692307692307692,
+      "tasa_confirmacion_manual": 0.4222222222222223
+    },
+    {
+      "umbral": 0.68,
+      "aceptados_automaticamente": 52,
+      "aciertos_automaticos": 14,
+      "errores_silenciosos": 38,
+      "tasa_error_silencioso": 0.4222222222222222,
+      "tasa_automatizacion": 0.5777777777777777,
+      "precision_automatica": 0.2692307692307692,
+      "tasa_confirmacion_manual": 0.4222222222222223
+    },
+    {
+      "umbral": 0.69,
+      "aceptados_automaticamente": 52,
+      "aciertos_automaticos": 14,
+      "errores_silenciosos": 38,
+      "tasa_error_silencioso": 0.4222222222222222,
+      "tasa_automatizacion": 0.5777777777777777,
+      "precision_automatica": 0.2692307692307692,
+      "tasa_confirmacion_manual": 0.4222222222222223
+    },
+    {
+      "umbral": 0.7,
+      "aceptados_automaticamente": 52,
+      "aciertos_automaticos": 14,
+      "errores_silenciosos": 38,
+      "tasa_error_silencioso": 0.4222222222222222,
+      "tasa_automatizacion": 0.5777777777777777,
+      "precision_automatica": 0.2692307692307692,
+      "tasa_confirmacion_manual": 0.4222222222222223
+    },
+    {
+      "umbral": 0.71,
+      "aceptados_automaticamente": 51,
+      "aciertos_automaticos": 14,
+      "errores_silenciosos": 37,
+      "tasa_error_silencioso": 0.4111111111111111,
+      "tasa_automatizacion": 0.5666666666666667,
+      "precision_automatica": 0.27450980392156865,
+      "tasa_confirmacion_manual": 0.43333333333333335
+    },
+    {
+      "umbral": 0.72,
+      "aceptados_automaticamente": 50,
+      "aciertos_automaticos": 13,
+      "errores_silenciosos": 37,
+      "tasa_error_silencioso": 0.4111111111111111,
+      "tasa_automatizacion": 0.5555555555555556,
+      "precision_automatica": 0.26,
+      "tasa_confirmacion_manual": 0.4444444444444444
+    },
+    {
+      "umbral": 0.73,
+      "aceptados_automaticamente": 50,
+      "aciertos_automaticos": 13,
+      "errores_silenciosos": 37,
+      "tasa_error_silencioso": 0.4111111111111111,
+      "tasa_automatizacion": 0.5555555555555556,
+      "precision_automatica": 0.26,
+      "tasa_confirmacion_manual": 0.4444444444444444
+    },
+    {
+      "umbral": 0.74,
+      "aceptados_automaticamente": 50,
+      "aciertos_automaticos": 13,
+      "errores_silenciosos": 37,
+      "tasa_error_silencioso": 0.4111111111111111,
+      "tasa_automatizacion": 0.5555555555555556,
+      "precision_automatica": 0.26,
+      "tasa_confirmacion_manual": 0.4444444444444444
+    },
+    {
+      "umbral": 0.75,
+      "aceptados_automaticamente": 48,
+      "aciertos_automaticos": 12,
+      "errores_silenciosos": 36,
+      "tasa_error_silencioso": 0.4,
+      "tasa_automatizacion": 0.5333333333333333,
+      "precision_automatica": 0.25,
+      "tasa_confirmacion_manual": 0.4666666666666667
+    },
+    {
+      "umbral": 0.76,
+      "aceptados_automaticamente": 47,
+      "aciertos_automaticos": 11,
+      "errores_silenciosos": 36,
+      "tasa_error_silencioso": 0.4,
+      "tasa_automatizacion": 0.5222222222222223,
+      "precision_automatica": 0.23404255319148937,
+      "tasa_confirmacion_manual": 0.47777777777777775
+    },
+    {
+      "umbral": 0.77,
+      "aceptados_automaticamente": 44,
+      "aciertos_automaticos": 10,
+      "errores_silenciosos": 34,
+      "tasa_error_silencioso": 0.37777777777777777,
+      "tasa_automatizacion": 0.4888888888888889,
+      "precision_automatica": 0.22727272727272727,
+      "tasa_confirmacion_manual": 0.5111111111111111
+    },
+    {
+      "umbral": 0.78,
+      "aceptados_automaticamente": 40,
+      "aciertos_automaticos": 9,
+      "errores_silenciosos": 31,
+      "tasa_error_silencioso": 0.34444444444444444,
+      "tasa_automatizacion": 0.4444444444444444,
+      "precision_automatica": 0.225,
+      "tasa_confirmacion_manual": 0.5555555555555556
+    },
+    {
+      "umbral": 0.79,
+      "aceptados_automaticamente": 40,
+      "aciertos_automaticos": 9,
+      "errores_silenciosos": 31,
+      "tasa_error_silencioso": 0.34444444444444444,
+      "tasa_automatizacion": 0.4444444444444444,
+      "precision_automatica": 0.225,
+      "tasa_confirmacion_manual": 0.5555555555555556
+    },
+    {
+      "umbral": 0.8,
+      "aceptados_automaticamente": 39,
+      "aciertos_automaticos": 9,
+      "errores_silenciosos": 30,
+      "tasa_error_silencioso": 0.3333333333333333,
+      "tasa_automatizacion": 0.43333333333333335,
+      "precision_automatica": 0.23076923076923078,
+      "tasa_confirmacion_manual": 0.5666666666666667
+    },
+    {
+      "umbral": 0.81,
+      "aceptados_automaticamente": 39,
+      "aciertos_automaticos": 9,
+      "errores_silenciosos": 30,
+      "tasa_error_silencioso": 0.3333333333333333,
+      "tasa_automatizacion": 0.43333333333333335,
+      "precision_automatica": 0.23076923076923078,
+      "tasa_confirmacion_manual": 0.5666666666666667
+    },
+    {
+      "umbral": 0.82,
+      "aceptados_automaticamente": 39,
+      "aciertos_automaticos": 9,
+      "errores_silenciosos": 30,
+      "tasa_error_silencioso": 0.3333333333333333,
+      "tasa_automatizacion": 0.43333333333333335,
+      "precision_automatica": 0.23076923076923078,
+      "tasa_confirmacion_manual": 0.5666666666666667
+    },
+    {
+      "umbral": 0.83,
+      "aceptados_automaticamente": 38,
+      "aciertos_automaticos": 9,
+      "errores_silenciosos": 29,
+      "tasa_error_silencioso": 0.32222222222222224,
+      "tasa_automatizacion": 0.4222222222222222,
+      "precision_automatica": 0.23684210526315788,
+      "tasa_confirmacion_manual": 0.5777777777777777
+    },
+    {
+      "umbral": 0.84,
+      "aceptados_automaticamente": 38,
+      "aciertos_automaticos": 9,
+      "errores_silenciosos": 29,
+      "tasa_error_silencioso": 0.32222222222222224,
+      "tasa_automatizacion": 0.4222222222222222,
+      "precision_automatica": 0.23684210526315788,
+      "tasa_confirmacion_manual": 0.5777777777777777
+    },
+    {
+      "umbral": 0.85,
+      "aceptados_automaticamente": 37,
+      "aciertos_automaticos": 9,
+      "errores_silenciosos": 28,
+      "tasa_error_silencioso": 0.3111111111111111,
+      "tasa_automatizacion": 0.4111111111111111,
+      "precision_automatica": 0.24324324324324326,
+      "tasa_confirmacion_manual": 0.5888888888888889
+    },
+    {
+      "umbral": 0.86,
+      "aceptados_automaticamente": 33,
+      "aciertos_automaticos": 8,
+      "errores_silenciosos": 25,
+      "tasa_error_silencioso": 0.2777777777777778,
+      "tasa_automatizacion": 0.36666666666666664,
+      "precision_automatica": 0.24242424242424243,
+      "tasa_confirmacion_manual": 0.6333333333333333
+    },
+    {
+      "umbral": 0.87,
+      "aceptados_automaticamente": 32,
+      "aciertos_automaticos": 8,
+      "errores_silenciosos": 24,
+      "tasa_error_silencioso": 0.26666666666666666,
+      "tasa_automatizacion": 0.35555555555555557,
+      "precision_automatica": 0.25,
+      "tasa_confirmacion_manual": 0.6444444444444444
+    },
+    {
+      "umbral": 0.88,
+      "aceptados_automaticamente": 31,
+      "aciertos_automaticos": 8,
+      "errores_silenciosos": 23,
+      "tasa_error_silencioso": 0.25555555555555554,
+      "tasa_automatizacion": 0.34444444444444444,
+      "precision_automatica": 0.25806451612903225,
+      "tasa_confirmacion_manual": 0.6555555555555556
+    },
+    {
+      "umbral": 0.89,
+      "aceptados_automaticamente": 30,
+      "aciertos_automaticos": 8,
+      "errores_silenciosos": 22,
+      "tasa_error_silencioso": 0.24444444444444444,
+      "tasa_automatizacion": 0.3333333333333333,
+      "precision_automatica": 0.26666666666666666,
+      "tasa_confirmacion_manual": 0.6666666666666667
+    },
+    {
+      "umbral": 0.9,
+      "aceptados_automaticamente": 28,
+      "aciertos_automaticos": 8,
+      "errores_silenciosos": 20,
+      "tasa_error_silencioso": 0.2222222222222222,
+      "tasa_automatizacion": 0.3111111111111111,
+      "precision_automatica": 0.2857142857142857,
+      "tasa_confirmacion_manual": 0.6888888888888889
+    },
+    {
+      "umbral": 0.91,
+      "aceptados_automaticamente": 27,
+      "aciertos_automaticos": 8,
+      "errores_silenciosos": 19,
+      "tasa_error_silencioso": 0.2111111111111111,
+      "tasa_automatizacion": 0.3,
+      "precision_automatica": 0.2962962962962963,
+      "tasa_confirmacion_manual": 0.7
+    },
+    {
+      "umbral": 0.92,
+      "aceptados_automaticamente": 27,
+      "aciertos_automaticos": 8,
+      "errores_silenciosos": 19,
+      "tasa_error_silencioso": 0.2111111111111111,
+      "tasa_automatizacion": 0.3,
+      "precision_automatica": 0.2962962962962963,
+      "tasa_confirmacion_manual": 0.7
+    },
+    {
+      "umbral": 0.93,
+      "aceptados_automaticamente": 26,
+      "aciertos_automaticos": 8,
+      "errores_silenciosos": 18,
+      "tasa_error_silencioso": 0.2,
+      "tasa_automatizacion": 0.28888888888888886,
+      "precision_automatica": 0.3076923076923077,
+      "tasa_confirmacion_manual": 0.7111111111111111
+    },
+    {
+      "umbral": 0.94,
+      "aceptados_automaticamente": 25,
+      "aciertos_automaticos": 8,
+      "errores_silenciosos": 17,
+      "tasa_error_silencioso": 0.18888888888888888,
+      "tasa_automatizacion": 0.2777777777777778,
+      "precision_automatica": 0.32,
+      "tasa_confirmacion_manual": 0.7222222222222222
+    },
+    {
+      "umbral": 0.95,
+      "aceptados_automaticamente": 25,
+      "aciertos_automaticos": 8,
+      "errores_silenciosos": 17,
+      "tasa_error_silencioso": 0.18888888888888888,
+      "tasa_automatizacion": 0.2777777777777778,
+      "precision_automatica": 0.32,
+      "tasa_confirmacion_manual": 0.7222222222222222
+    },
+    {
+      "umbral": 0.96,
+      "aceptados_automaticamente": 24,
+      "aciertos_automaticos": 8,
+      "errores_silenciosos": 16,
+      "tasa_error_silencioso": 0.17777777777777778,
+      "tasa_automatizacion": 0.26666666666666666,
+      "precision_automatica": 0.3333333333333333,
+      "tasa_confirmacion_manual": 0.7333333333333334
+    },
+    {
+      "umbral": 0.97,
+      "aceptados_automaticamente": 21,
+      "aciertos_automaticos": 7,
+      "errores_silenciosos": 14,
+      "tasa_error_silencioso": 0.15555555555555556,
+      "tasa_automatizacion": 0.23333333333333334,
+      "precision_automatica": 0.3333333333333333,
+      "tasa_confirmacion_manual": 0.7666666666666666
+    },
+    {
+      "umbral": 0.98,
+      "aceptados_automaticamente": 19,
+      "aciertos_automaticos": 7,
+      "errores_silenciosos": 12,
+      "tasa_error_silencioso": 0.13333333333333333,
+      "tasa_automatizacion": 0.2111111111111111,
+      "precision_automatica": 0.3684210526315789,
+      "tasa_confirmacion_manual": 0.7888888888888889
+    },
+    {
+      "umbral": 0.99,
+      "aceptados_automaticamente": 17,
+      "aciertos_automaticos": 7,
+      "errores_silenciosos": 10,
+      "tasa_error_silencioso": 0.1111111111111111,
+      "tasa_automatizacion": 0.18888888888888888,
+      "precision_automatica": 0.4117647058823529,
+      "tasa_confirmacion_manual": 0.8111111111111111
+    },
+    {
+      "umbral": 1.0,
+      "aceptados_automaticamente": 0,
+      "aciertos_automaticos": 0,
+      "errores_silenciosos": 0,
+      "tasa_error_silencioso": 0.0,
+      "tasa_automatizacion": 0.0,
+      "precision_automatica": 1.0,
+      "tasa_confirmacion_manual": 1.0
+    }
+  ]
+}

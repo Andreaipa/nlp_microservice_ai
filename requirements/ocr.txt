@@ -1,0 +1,6 @@
+# Motor OCR por omisión: RapidOCR sobre ONNX Runtime.
+# Diez veces más rápido que PaddleOCR en CPU sobre este dominio (127 ms frente
+# a 1224 ms por pasada) y sin la dependencia de paddlepaddle. Ver
+# docs/RENDIMIENTO.md.
+-r base.txt
+rapidocr-onnxruntime==1.4.4

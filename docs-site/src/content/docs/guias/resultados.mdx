@@ -1,0 +1,131 @@
+---
+title: Resultados medidos
+description: Qué consigue el sistema, medido sobre cilindros que el modelo nunca vio.
+---
+
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Todas las cifras provienen del conjunto de **test**: 15 cilindros y 90
+fotografías que no intervinieron en el entrenamiento. La separación se hace
+por identidad de cilindro, nunca por imagen, para que la evaluación mida
+generalización y no memorización.
+
+## Sistema completo
+
+```
+identificación correcta ........ 22.2%   (60% en tomas cercanas)
+errores silenciosos ............  0.0%
+requiere confirmación manual ... 100.0%
+CER medio del serial ...........  0.537
+latencia mediana / p95 ......... 667 ms / 1356 ms
+```
+
+### Por condición de captura
+
+| Condición    | Acierto |
+| ------------ | ------- |
+| **3.Cerca**  | **60%** |
+| 1.Frontal    | 20%     |
+| 2.Diagonal   | 13%     |
+| 4.Lejos      | 13%     |
+| 5.Luz normal | 13%     |
+| 6.Poca luz   | 13%     |
+
+<Aside type="tip" title="El dato más accionable del proyecto">
+  La diferencia entre el 60% de las tomas cercanas y el 13% de las lejanas no se
+  arregla con un modelo mejor: se arregla en la aplicación. Guiar al operario a
+  encuadrar el collarín de cerca **triplica el acierto sin tocar una línea de
+  código del modelo**.
+</Aside>
+
+## Detector
+
+Sobre cilindros no vistos en entrenamiento:
+
+| Clase          | mAP50 |
+| -------------- | ----- |
+| Global         | 0.301 |
+| `marking_area` | 0.447 |
+| `serial_text`  | 0.155 |
+
+El detector **no es el cuello de botella**: localiza la zona troquelada con
+confianza en torno a 0.83. La clase `serial_text`, que acota la línea concreta
+del número, sí está floja, y eso tiene consecuencias (ver más abajo).
+
+## Qué movió cada cambio
+
+Historial de lo que se probó y lo que consiguió:
+
+| Cambio                                   | Efecto                          |
+| ---------------------------------------- | ------------------------------- |
+| RapidOCR en lugar de PaddleOCR           | latencia 8,8 s → **0,67 s**     |
+| Corregir el filtro de posición vertical  | anotaciones 92 → **326**        |
+| Entrenar el detector (72 → 247 imágenes) | mAP50 0.147 → **0.301**         |
+| Emparejamiento por fragmento             | acierto 18,9% → **22,2%**       |
+| Reconocedor propio desde cero            | **empeoró**: CER 0.597 vs 0.537 |
+
+Entrenar el detector mejoró la latencia y la calidad de los recortes, pero
+**no la precisión de identificación**. El límite estaba, y sigue estando, en
+el reconocimiento de caracteres.
+
+## Por qué no basta con proponer candidatos
+
+Una salida razonable para un sistema con acierto bajo sería no exigir la
+lectura exacta y ofrecer al operario los cilindros más parecidos. Se midió:
+
+|                                     | Acierto |
+| ----------------------------------- | ------- |
+| El correcto es el primero propuesto | 22%     |
+| Está entre los tres primeros        | 23%     |
+| Está entre los cinco primeros       | 26%     |
+
+Cuatro puntos de diferencia entre el primero y los cinco primeros. Es decir:
+**cuando el OCR falla, no falla por poco**. No devuelve un serial parecido,
+devuelve otra cosa o nada (22 de 90 imágenes sin ningún candidato).
+
+Este resultado descarta la identificación asistida por candidatos como forma
+de compensar el acierto del OCR.
+
+## Limitaciones conocidas
+
+<Tabs>
+  <TabItem label="Etiquetas adhesivas">
+En el Cilindro_034 el serial `171392042` está visible en la fotografía y el
+sistema leyó `201707`, que es la fecha estampada debajo. El OCR había
+reconocido además `TRUJILLO`, `Argonindustal` y `161048355`: todo texto
+**impreso** de las pegatinas del collarín.
+
+Es comprensible, porque el texto impreso tiene mucho más contraste que el
+troquelado. El remedio es mejorar la clase `serial_text` (mAP 0.155), para que
+el recorte que llega al OCR no contenga etiquetas.
+
+  </TabItem>
+  <TabItem label="Encuadre ambiguo">
+Dos de cada seis tomas marcadas como `3.Cerca` no muestran el collarín: una
+encuadra el cilindro entero y otra se acerca a la válvula, por encima de la
+zona estampada.
+
+"Cerca" debe significar **cerca del troquelado**, no cerca del cilindro. El
+[protocolo de captura](/datos/protocolo-captura/) lo precisa.
+
+  </TabItem>
+  <TabItem label="Seriales cortos">
+Doce cilindros del inventario tienen seriales de seis caracteres o menos. En
+una fotografía del cilindro `21S062189` el OCR leyó el fragmento `20640`, que
+es el serial **completo** del Cilindro_015.
+
+Todos esos seriales quedan marcados para confirmación obligatoria. Remarcar
+esos doce cilindros con un código más largo eliminaría el problema.
+
+  </TabItem>
+</Tabs>
+
+## Reproducir estas cifras
+
+```bash
+make evaluate    # sistema completo sobre el test
+make calibrate   # curva de umbrales
+```
+
+Los informes quedan en `models/pipeline_metrics.json` y
+`models/threshold_calibration.json`.

@@ -1,0 +1,91 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  calidad:
+    name: Estilo y pruebas
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Instalar dependencias
+        # Sólo las de inferencia y desarrollo. La pila de entrenamiento
+        # (PyTorch, ultralytics) pesa más de 1 GB y no hace falta para
+        # comprobar estilo ni ejecutar las pruebas.
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements/base.txt
+          pip install rapidocr-onnxruntime==1.4.4
+          pip install pytest pytest-asyncio ruff mypy
+
+      - name: Estilo
+        run: ruff check app training tests
+
+      - name: Tipos
+        run: mypy app --ignore-missing-imports
+
+      - name: Pruebas
+        run: pytest -q
+
+      - name: Comprobar que el contrato OpenAPI está al día
+        run: |
+          python training/export_openapi.py --out /tmp/openapi.json
+          diff -q /tmp/openapi.json docs/openapi.json \
+            || (echo "::error::El esquema OpenAPI cambió. Ejecute: make openapi" && exit 1)
+
+  documentacion:
+    name: Sitio de documentación
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: docs-site/package-lock.json
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar dependencias del sitio
+        run: npm --prefix docs-site ci
+
+      - name: Formato (Prettier)
+        run: npm --prefix docs-site run format:check
+
+      - name: Comprobar que el sitio está sincronizado con docs/
+        run: python training/sync_docs.py --check
+
+      - name: Compilar el sitio
+        run: npm --prefix docs-site run build
+
+  imagen:
+    name: Imagen Docker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Construir
+        # Sin OCR: comprueba que la imagen se construye y arranca sin
+        # descargar cientos de megabytes de modelos.
+        run: docker build --build-arg OCR=none -t ai-cylinder-service:ci .
+      - name: Comprobar que responde
+        run: |
+          docker run -d --name ci -p 8000:8000 \
+            -e AI_OCR_BACKEND=null \
+            -e AI_CATALOG_PATH=/app/datasets/catalog.example.json \
+            ai-cylinder-service:ci
+          for i in $(seq 1 30); do
+            curl -fsS http://localhost:8000/api/v1/health && break || sleep 2
+          done
+          curl -fsS http://localhost:8000/api/v1/version

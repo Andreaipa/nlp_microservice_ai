@@ -1,0 +1,6 @@
+# Motor OCR alternativo. Reconoce más texto secundario en algunas
+# fotografías, a cambio de ~600 MB de dependencias y de un orden de magnitud
+# más de latencia. Sólo si se necesita: AI_OCR_BACKEND=paddle.
+-r base.txt
+paddleocr==3.7.0
+paddlepaddle==3.3.1

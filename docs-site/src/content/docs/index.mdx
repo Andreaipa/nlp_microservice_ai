@@ -1,0 +1,88 @@
+---
+title: AI Cylinder Service
+description: Microservicio de visión artificial para identificar cilindros industriales a partir de una fotografía.
+template: splash
+hero:
+  tagline: |
+    Identifica cilindros industriales a partir de una fotografía del
+    troquelado de su collarín. Detecta, lee, normaliza y resuelve el número
+    de serie contra el inventario.
+  actions:
+    - text: Puesta en marcha
+      link: /guias/puesta-en-marcha/
+      icon: right-arrow
+      variant: primary
+    - text: Referencia de la API
+      link: /api/operations/analyze_cylinder_api_v1_cylinders_analyze_post/
+      icon: open-book
+      variant: secondary
+---
+
+import { Card, CardGrid, Aside } from '@astrojs/starlight/components';
+
+## Qué hace
+
+```
+imagen → detección de regiones → recorte → realce → OCR
+       → normalización → resolución contra el inventario → JSON
+```
+
+El servicio responde a una sola pregunta: **¿qué información puedo
+identificar en esta imagen?**. No decide nada de negocio. El backend
+principal es quien determina qué movimiento registrar.
+
+<Aside type="caution" title="Es un asistente, no un lector autónomo">
+  La calibración empírica de umbrales concluyó que **no existe un punto de
+  corte** que permita aceptar lecturas automáticamente con menos del 1% de
+  error. El servicio siempre pide confirmación humana. Está medido y documentado
+  en [Umbrales de confianza](/sistema/umbrales/).
+</Aside>
+
+<CardGrid>
+  <Card title="Qué consigue" icon="approve-check">
+    **60%** de identificación correcta en tomas cercanas al collarín, con **0%**
+    de errores silenciosos y **667 ms** de latencia mediana.
+  </Card>
+  <Card title="Dónde está el límite" icon="warning">
+    **22%** en general. El cuello de botella es leer caracteres troquelados
+    sobre metal oxidado, no localizarlos.
+  </Card>
+  <Card title="Qué necesita el cliente" icon="laptop">
+    Que la aplicación **obligue a encuadrar el collarín de cerca**. Es la
+    diferencia entre 60% y 13%.
+  </Card>
+  <Card title="Dónde corre" icon="setting">
+    CPU, sin GPU. Unos 400 MB de memoria y 900 MB de imagen Docker.
+  </Card>
+</CardGrid>
+
+## Por dónde empezar
+
+<CardGrid>
+  <Card title="Voy a integrarlo" icon="puzzle">
+    [Integración con el backend](/sistema/integracion/) explica el contrato, los
+    códigos de error y cómo interpretar cada respuesta.
+  </Card>
+  <Card title="Voy a desplegarlo" icon="rocket">
+    [Puesta en marcha](/guias/puesta-en-marcha/) cubre local, Docker y el ajuste
+    según la potencia del equipo.
+  </Card>
+  <Card title="Quiero entender las decisiones" icon="open-book">
+    [Arquitectura](/sistema/arquitectura/) explica por qué el sistema está hecho
+    así y qué se probó antes.
+  </Card>
+  <Card title="Quiero mejorar el modelo" icon="seti:python">
+    [El dataset](/datos/dataset/) y [Anotación](/datos/anotacion/) describen los
+    datos y cómo ampliarlos.
+  </Card>
+</CardGrid>
+
+## Una nota sobre honestidad de las cifras
+
+Todas las métricas de esta documentación provienen de ejecutar los scripts de
+evaluación sobre un conjunto de **test separado por identidad de cilindro**:
+15 cilindros que el modelo nunca vio durante el entrenamiento. Ningún número
+está estimado.
+
+Los informes se regeneran con `make evaluate` y `make calibrate`, y quedan en
+`models/` para poder contrastarlos.
