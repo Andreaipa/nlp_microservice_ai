@@ -100,7 +100,7 @@ utilizable, así que **la GPU no es un requisito** sino una mejora si aparece.
 
 |                     | Con PaddleOCR | Con RapidOCR |
 | ------------------- | ------------- | ------------ |
-| Imagen Docker       | ~1,6 GB       | ~900 MB      |
+| Imagen Docker       | ~1,6 GB       | ~700 MB      |
 | Memoria por proceso | ~1,5 GB       | ~400 MB      |
 
 En un equipo de gama media esa diferencia decide si se puede ejecutar el

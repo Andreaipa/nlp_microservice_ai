@@ -10,22 +10,47 @@ jobs:
     name: Estilo y pruebas
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
           cache: pip
+          # Por omisión la caché busca requirements.txt o pyproject.toml en
+          # la raíz; las dependencias de este proyecto están en requirements/.
+          cache-dependency-path: requirements/*.txt
 
       - name: Instalar dependencias
-        # Sólo las de inferencia y desarrollo. La pila de entrenamiento
-        # (PyTorch, ultralytics) pesa más de 1 GB y no hace falta para
-        # comprobar estilo ni ejecutar las pruebas.
+        # Las mismas que usa un desarrollador (make install): inferencia, OCR
+        # y herramientas de prueba. La pila de entrenamiento (PyTorch,
+        # ultralytics) pesa más de 1 GB y no hace falta aquí.
+        # RapidOCR va aparte y con --no-deps: ver requirements/ocr.txt.
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements/base.txt
-          pip install rapidocr-onnxruntime==1.4.4
-          pip install pytest pytest-asyncio ruff mypy
+          pip install -r requirements/dev.txt
+          pip install --no-deps -r requirements/ocr-engine.txt
+
+      - name: Una sola variante de OpenCV
+        # Si opencv-python se colara junto a la headless, cv2 pediría libGL
+        # y el servicio no arrancaría en un servidor sin entorno gráfico.
+        run: |
+          pip list | grep -i opencv
+          test "$(pip list 2>/dev/null | grep -ci '^opencv')" = "1"
+
+      - name: El motor OCR carga y reconoce
+        run: |
+          python - <<'EOF'
+          import sys
+          sys.path.insert(0, "tests")
+          from conftest import render_stamped_plate
+          from app.ocr.rapid_engine import RapidOcrEngine
+
+          engine = RapidOcrEngine()
+          assert engine.is_ready(), "RapidOCR no se pudo cargar"
+          lines = engine.read(render_stamped_plate())
+          print([line.text for line in lines])
+          assert lines, "el OCR no reconoció nada en la placa de prueba"
+          EOF
 
       - name: Estilo
         run: ruff check app training tests
@@ -46,15 +71,15 @@ jobs:
     name: Sitio de documentación
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: npm
           cache-dependency-path: docs-site/package-lock.json
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
 
@@ -74,7 +99,7 @@ jobs:
     name: Imagen Docker
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Construir
         # Sin OCR: comprueba que la imagen se construye y arranca sin
         # descargar cientos de megabytes de modelos.

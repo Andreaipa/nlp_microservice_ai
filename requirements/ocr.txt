@@ -2,5 +2,25 @@
 # Diez veces más rápido que PaddleOCR en CPU sobre este dominio (127 ms frente
 # a 1224 ms por pasada) y sin la dependencia de paddlepaddle. Ver
 # docs/RENDIMIENTO.md.
+#
+# IMPORTANTE: rapidocr-onnxruntime NO se instala desde aquí, sino desde
+# ocr-engine.txt y con --no-deps:
+#
+#   pip install -r requirements/ocr.txt
+#   pip install --no-deps -r requirements/ocr-engine.txt
+#
+# El motivo: el paquete declara como dependencia opencv-python, la variante de
+# OpenCV con interfaz gráfica, que se instala junto a la opencv-python-headless
+# de base.txt. Las dos proporcionan el mismo módulo `cv2` y gana la última en
+# instalarse, que exige libGL. En un servidor o contenedor sin entorno gráfico
+# el resultado es `ImportError: libGL.so.1`. RapidOCR sólo necesita poder
+# importar `cv2`, y la variante headless se lo da.
+#
+# Sus demás dependencias se declaran aquí de forma explícita:
 -r base.txt
-rapidocr-onnxruntime==1.4.4
+pyclipper==1.4.0
+shapely==2.1.2
+PyYAML==6.0.2
+pillow==12.3.0
+six==1.17.0
+tqdm==4.70.1

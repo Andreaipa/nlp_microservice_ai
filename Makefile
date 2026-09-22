@@ -40,8 +40,10 @@ $(VENV):
 	python3 -m venv $(VENV)
 	$(PY) -m pip install --upgrade pip
 
+# RapidOCR va aparte y con --no-deps: ver requirements/ocr.txt.
 install: $(VENV)
 	$(PY) -m pip install -r requirements/dev.txt
+	$(PY) -m pip install --no-deps -r requirements/ocr-engine.txt
 
 install-train: $(VENV)
 	$(PY) -m pip install -r requirements/train.txt

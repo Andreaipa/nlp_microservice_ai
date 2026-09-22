@@ -1,4 +1,8 @@
 # Dependencias de ENTRENAMIENTO. No deben instalarse en producción.
+#
+# Nota: ultralytics arrastra opencv-python, que convive con la variante
+# headless de base.txt. En una estación de trabajo con escritorio no da
+# problemas; por eso esta pila no se instala en el contenedor ni en CI.
 -r base.txt
 ultralytics==8.4.157
 torch>=2.4

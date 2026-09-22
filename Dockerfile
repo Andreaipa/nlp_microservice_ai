@@ -20,7 +20,7 @@ WORKDIR /build
 COPY requirements/ ./requirements/
 
 # ARG OCR selecciona el motor:
-#   rapid  -> RapidOCR sobre ONNX Runtime (por omisión, ~900 MB de imagen)
+#   rapid  -> RapidOCR sobre ONNX Runtime (por omisión, ~700 MB de imagen)
 #   paddle -> PaddleOCR (~1,6 GB; sólo si se necesita su mayor cobertura)
 #   none   -> sin OCR, para pruebas de contrato
 ARG OCR=rapid
@@ -29,15 +29,16 @@ RUN python -m venv /opt/venv \
     && case "$OCR" in \
          paddle) /opt/venv/bin/pip install -r requirements/ocr-paddle.txt ;; \
          none)   /opt/venv/bin/pip install -r requirements/base.txt ;; \
-         *)      /opt/venv/bin/pip install -r requirements/ocr.txt ;; \
+         *)      /opt/venv/bin/pip install -r requirements/ocr.txt \
+                 && /opt/venv/bin/pip install --no-deps -r requirements/ocr-engine.txt ;; \
        esac
 
 # ---------------------------------------------------------------------------
 FROM python:3.12-slim-bookworm AS runtime
 
-# libGL y libglib son necesarias para OpenCV incluso en su variante headless.
+# Sólo se instala la variante headless de OpenCV (ver requirements/ocr.txt),
+# así que no hace falta libGL. libglib sí la usan algunas rutas de OpenCV.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        libgl1 \
         libglib2.0-0 \
         curl \
     && rm -rf /var/lib/apt/lists/* \

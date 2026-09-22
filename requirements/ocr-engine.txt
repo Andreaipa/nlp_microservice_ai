@@ -1,0 +1,5 @@
+# Instalar SIEMPRE con --no-deps (ver ocr.txt):
+#
+#   pip install --no-deps -r requirements/ocr-engine.txt
+#
+rapidocr-onnxruntime==1.4.4
