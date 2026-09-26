@@ -303,3 +303,29 @@ async def test_partial_reading_matching_a_short_serial_is_not_auto_accepted(
 
     assert result.requires_manual_confirmation is True
     assert ReviewReason.SERIAL_TOO_SHORT in result.review_reasons
+
+
+@pytest.mark.asyncio
+async def test_auto_accept_threshold_of_one_never_auto_accepts(
+    settings: Settings, stamped_jpeg: bytes
+):
+    """Regresión: con umbral 1.00 una lectura de confianza 1.0 se colaba.
+
+    La calibración concluyó que no hay umbral seguro y fijó 1.00 para que el
+    sistema pida siempre confirmación. Pero el consenso entre variantes puede
+    dar exactamente 1.0 en una foto nítida, y con `confidence < 1.0` ese caso
+    se aceptaba automáticamente.
+    """
+    scoped = settings.model_copy(update={
+        "thresholds_calibrated": True,
+        "serial_auto_accept_confidence": 1.0,
+        "serial_review_confidence": 0.1,
+    })
+    pipeline = build_pipeline(scoped, [OcrLine(text="19S206055", confidence=1.0)])
+    result = await pipeline.analyze(stamped_jpeg, request_id="perfecta")
+
+    assert result.data.numero_serie.confidence == pytest.approx(1.0)
+    assert result.requires_manual_confirmation is True
+    assert ReviewReason.CONFIRMATION_REQUIRED in result.review_reasons
+    # Y no se atribuye a una confianza baja, que sería falso.
+    assert ReviewReason.LOW_OCR_CONFIDENCE not in result.review_reasons

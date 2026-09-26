@@ -79,3 +79,20 @@ modelo, y seguir con confirmación manual mientras tanto.
 
 Ambos deben revisarse cuando el catálogo tenga los 100 cilindros: cuantos más
 seriales haya, más probable es que dos se parezcan, y más importa el margen.
+
+## El umbral 1.00 significa "nunca automático"
+
+La calibración concluyó que no existe un umbral seguro, y el servicio se
+configuró con `AI_SERIAL_AUTO_ACCEPT_CONFIDENCE=1.00` para que pidiera siempre
+confirmación.
+
+Al integrarlo con la aplicación apareció un fallo: la confianza por consenso
+entre variantes puede valer **exactamente 1.0** en una foto nítida, y con una
+comparación estricta (`confianza < 1.0`) ese caso se aceptaba sin que nadie lo
+viera. No pasó durante la evaluación porque ninguna foto del test llegó a 1.0,
+pero en producción sí puede ocurrir.
+
+Ahora un umbral de 1.00 o mayor desactiva de forma explícita la aceptación
+automática, y la respuesta lo indica con el motivo `confirmation_required`. Se
+eligió un motivo propio en lugar de `low_ocr_confidence` porque sería falso: la
+lectura puede ser perfecta, lo que exige la confirmación es la política.

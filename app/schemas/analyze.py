@@ -31,6 +31,10 @@ class ReviewReason(str, Enum):
     SERIAL_TOO_SHORT = "serial_too_short"
     NO_DETECTOR_MODEL = "no_detector_model"
     THRESHOLDS_NOT_CALIBRATED = "thresholds_not_calibrated"
+    # La lectura puede ser buena, pero la calibración concluyó que no existe
+    # un umbral que permita aceptar sin revisar, así que la política vigente
+    # pide siempre confirmación. No es un defecto de esta lectura concreta.
+    CONFIRMATION_REQUIRED = "confirmation_required"
     POOR_IMAGE_QUALITY = "poor_image_quality"
 
 
@@ -209,4 +213,12 @@ class VersionResponse(BaseModel):
     detector_backend: str
     ocr_backend: str
     catalog_size: int
+    catalog_source: str = Field(
+        default="estatico",
+        description="estatico | supabase+estatico: de dónde sale el catálogo.",
+    )
+    catalog_last_sync: str | None = Field(
+        default=None,
+        description="Última sincronización correcta con Supabase (ISO 8601).",
+    )
     thresholds_calibrated: bool

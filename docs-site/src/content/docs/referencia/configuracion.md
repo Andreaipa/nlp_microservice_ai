@@ -59,6 +59,29 @@ Ver [Umbrales de confianza](/sistema/umbrales/) antes de tocar estos valores.
 | `AI_BACKEND_API_KEY`         | —                       | Se envía como `Authorization: Bearer`.      |
 | `AI_BACKEND_TIMEOUT_SECONDS` | `5.0`                   | La consulta es best-effort.                 |
 
+## Inventario de la aplicación (Supabase)
+
+| Variable                     | Por defecto | Para qué                                                                                                          |
+| ---------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------- |
+| `AI_SUPABASE_URL`            | —           | Proyecto Supabase de la app. Sin él, sólo catálogo estático.                                                      |
+| `AI_SUPABASE_KEY`            | —           | Basta la clave anon: sólo se leen columnas de `cilindros`.                                                        |
+| `AI_SUPABASE_CATALOG_TABLE`  | `cilindros` | Tabla del inventario.                                                                                             |
+| `AI_CATALOG_REFRESH_SECONDS` | `60`        | Cada cuánto se relee. Un cilindro dado de alta en la app se reconoce en las fotos, como mucho, un minuto después. |
+
+Si Supabase no responde, el servicio sigue con el último catálogo bueno: nunca
+lo vacía por un fallo de red. El estado de la sincronización aparece en
+`/ready` y en `/version`.
+
+## CORS
+
+| Variable                | Por defecto | Para qué                                                                                    |
+| ----------------------- | ----------- | ------------------------------------------------------------------------------------------- |
+| `AI_CORS_ALLOW_ORIGINS` | —           | Orígenes separados por comas. Vacío: cualquiera fuera de producción, ninguno en producción. |
+
+La app llama al servicio desde un webview, así que necesita CORS también en
+producción: `http://localhost:8100` (ionic serve), `http://localhost`
+(Capacitor Android) y `capacitor://localhost` (Capacitor iOS).
+
 ## Entrada y observabilidad
 
 | Variable                          | Por defecto      | Para qué                                                                                                            |

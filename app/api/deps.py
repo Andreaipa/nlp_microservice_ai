@@ -16,7 +16,8 @@ from app.observability.audit import AuditLog
 from app.ocr.base import OcrEngine
 from app.ocr.registry import build_ocr_engine
 from app.services.backend_client import BackendClient
-from app.services.catalog import CylinderCatalog
+from app.services.catalog import CylinderCatalog, load_catalog_records
+from app.services.catalog_sync import CatalogSync
 from app.services.pipeline import AnalysisPipeline
 from app.vision.base import Detector
 from app.vision.registry import build_detector
@@ -33,6 +34,7 @@ class ServiceContainer:
     backend: BackendClient
     audit: AuditLog
     pipeline: AnalysisPipeline
+    catalog_sync: CatalogSync
 
 
 def build_container(settings: Settings | None = None) -> ServiceContainer:
@@ -44,6 +46,9 @@ def build_container(settings: Settings | None = None) -> ServiceContainer:
         settings.catalog_path,
         max_distance=float(settings.catalog_fuzzy_max_distance),
         ambiguity_margin=float(settings.catalog_fuzzy_margin),
+    )
+    catalog_sync = CatalogSync(
+        settings, catalog, static_records=load_catalog_records(settings.catalog_path)
     )
     backend = BackendClient(settings)
     audit = AuditLog(
@@ -65,6 +70,7 @@ def build_container(settings: Settings | None = None) -> ServiceContainer:
     return ServiceContainer(
         settings=settings, detector=detector, ocr_engine=ocr_engine,
         catalog=catalog, backend=backend, audit=audit, pipeline=pipeline,
+        catalog_sync=catalog_sync,
     )
 
 

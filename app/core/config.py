@@ -97,6 +97,30 @@ class Settings(BaseSettings):
     catalog_path: Path = BASE_DIR / "datasets" / "catalog.json"
     catalog_enabled: bool = True
 
+    # --- Inventario en Supabase --------------------------------------------
+    # La aplicación móvil guarda el inventario en la tabla `cilindros` de
+    # Supabase. Si se configuran URL y clave, el servicio la lee y la combina
+    # con el catálogo estático, de modo que un cilindro recién registrado en
+    # la aplicación se reconoce en las fotografías sin reiniciar nada.
+    #
+    # Basta la clave pública (anon): sólo se lee la tabla de cilindros, y se
+    # piden explícitamente las columnas necesarias, nunca datos de clientes.
+    supabase_url: str | None = None
+    supabase_key: str | None = None
+    supabase_catalog_table: str = "cilindros"
+    supabase_timeout_seconds: float = 5.0
+    catalog_refresh_seconds: int = 60
+
+    # --- CORS ------------------------------------------------------------
+    # Orígenes autorizados a llamar al servicio desde un navegador o webview,
+    # separados por comas. La aplicación Ionic usa:
+    #   http://localhost:8100   (ionic serve)
+    #   http://localhost        (Capacitor en Android)
+    #   capacitor://localhost   (Capacitor en iOS)
+    # Vacío: se permite cualquier origen fuera de producción y ninguno en
+    # producción.
+    cors_allow_origins: str = ""
+
     # --- Backend principal --------------------------------------------------
     backend_base_url: str | None = None
     backend_api_key: str | None = None
@@ -136,6 +160,14 @@ class Settings(BaseSettings):
     @property
     def base_dir(self) -> Path:
         return BASE_DIR
+
+    @property
+    def cors_origins(self) -> list[str]:
+        """Orígenes CORS efectivos según la configuración y el entorno."""
+        explicit = [o.strip() for o in self.cors_allow_origins.split(",") if o.strip()]
+        if explicit:
+            return explicit
+        return [] if self.environment == "prod" else ["*"]
 
 
 @lru_cache(maxsize=1)

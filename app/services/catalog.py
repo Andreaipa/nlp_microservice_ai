@@ -26,6 +26,7 @@ from typing import Any
 from app.core.logging import get_logger
 from app.parsing.serial import (
     DEFAULT_PATTERN,
+    MIN_RELIABLE_SERIAL_LENGTH,
     SerialPattern,
     normalize_serial_charset,
     weighted_edit_distance,
@@ -35,20 +36,8 @@ from app.schemas.analyze import CatalogCandidate, MatchStatus, SerialMatch
 logger = get_logger(__name__)
 
 
-# Longitud por debajo de la cual un serial no sirve como identificador fiable.
-#
-# El umbral está en 7 por un fallo observado al medir sobre el conjunto de
-# test, no por prudencia abstracta. En una fotografía del cilindro con serial
-# "21S062189" el OCR leyó el fragmento "20640", que resulta ser el serial
-# COMPLETO del Cilindro_015. El sistema lo habría dado por identificado y el
-# movimiento habría quedado registrado en el cilindro equivocado, sin que
-# nada lo delatara: el peor fallo posible en un sistema de trazabilidad.
-#
-# El inventario tiene 12 seriales de seis caracteres o menos. Todos ellos
-# quedan marcados para confirmación manual: es el precio de no equivocarse.
-# Si la empresa vuelve a marcar esos cilindros con un código más largo, el
-# umbral deja de afectarles.
-MIN_RELIABLE_SERIAL_LENGTH = 7
+# El umbral vive en app/parsing/serial.py para que catálogo y scripts compartan
+# un único valor.
 
 # Longitud mínima para aceptar que un texto leído es un FRAGMENTO de un serial
 # del inventario. El OCR pierde con frecuencia los primeros caracteres del
@@ -82,6 +71,54 @@ class CatalogEntry:
     @property
     def is_too_short(self) -> bool:
         return len(self.numero_serie) < MIN_RELIABLE_SERIAL_LENGTH
+
+
+def load_catalog_records(path: Path) -> list[dict[str, Any]]:
+    """Lee los registros de un catálogo JSON. Devuelve [] si no se puede."""
+    if not path.exists():
+        return []
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        logger.exception("catálogo ilegible", extra={"path": str(path)})
+        return []
+    records = payload.get("cylinders", []) if isinstance(payload, dict) else payload
+    return [r for r in records if isinstance(r, dict)]
+
+
+def entries_from_records(records: list[dict[str, Any]]) -> list[CatalogEntry]:
+    """Agrupa registros de cilindro en entradas de catálogo, una por serial.
+
+    Se usa tanto al leer el catálogo estático como al sincronizar con la tabla
+    `cilindros` de Supabase, de modo que las dos fuentes producen entradas con
+    la misma forma.
+    """
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for record in records:
+        serial = normalize_serial_charset(str(record.get("numero_serie", "")))
+        if not serial:
+            continue
+        grouped.setdefault(serial, []).append(record)
+
+    entries: list[CatalogEntry] = []
+    for serial, group in grouped.items():
+        cylinders = tuple(str(r["cilindro"]) for r in group if r.get("cilindro"))
+        # Con un serial repetido no se puede saber a cuál de los dos envases
+        # pertenece una lectura, así que no se mezclan sus datos: se conservan
+        # los del primero y la entrada queda marcada como ambigua.
+        attributes = {
+            k: v for k, v in group[0].items() if k not in ("numero_serie", "cilindro")
+        }
+        entries.append(CatalogEntry(
+            numero_serie=serial, attributes=attributes, cilindros=cylinders,
+        ))
+
+    duplicated = [e.numero_serie for e in entries if len(e.cilindros) > 1]
+    if duplicated:
+        logger.warning(
+            "el catálogo contiene seriales repetidos", extra={"seriales": duplicated}
+        )
+    return entries
 
 
 class CylinderCatalog:
@@ -129,37 +166,7 @@ class CylinderCatalog:
             return cls(max_distance=max_distance, ambiguity_margin=ambiguity_margin)
 
         raw_entries = payload.get("cylinders", payload if isinstance(payload, list) else [])
-
-        grouped: dict[str, list[dict[str, Any]]] = {}
-        for record in raw_entries:
-            serial = normalize_serial_charset(str(record.get("numero_serie", "")))
-            if not serial:
-                continue
-            grouped.setdefault(serial, []).append(record)
-
-        entries: list[CatalogEntry] = []
-        for serial, records in grouped.items():
-            cylinders = tuple(
-                str(r["cilindro"]) for r in records if r.get("cilindro")
-            )
-            # Con un serial repetido no se puede saber a cuál de los dos
-            # envases pertenece una lectura, así que no se mezclan sus datos:
-            # se conservan los del primero y la entrada queda marcada como
-            # ambigua.
-            attributes = {
-                k: v for k, v in records[0].items()
-                if k not in ("numero_serie", "cilindro")
-            }
-            entries.append(CatalogEntry(
-                numero_serie=serial, attributes=attributes, cilindros=cylinders,
-            ))
-
-        duplicated = [e.numero_serie for e in entries if len(e.cilindros) > 1]
-        if duplicated:
-            logger.warning(
-                "el catálogo contiene seriales repetidos",
-                extra={"seriales": duplicated},
-            )
+        entries = entries_from_records(raw_entries)
 
         catalog = cls(entries, max_distance=max_distance, ambiguity_margin=ambiguity_margin)
         logger.info(
@@ -168,6 +175,20 @@ class CylinderCatalog:
                    "patron": catalog.pattern.mask or "sin máscara"},
         )
         return catalog
+
+    def replace_entries(self, entries: list[CatalogEntry]) -> None:
+        """Sustituye el contenido del catálogo por otro completo.
+
+        Se construye el diccionario nuevo aparte y se asigna de una vez: una
+        petición que esté resolviendo un serial en ese momento ve el catálogo
+        anterior o el nuevo, nunca uno a medias.
+        """
+        fresh = {entry.numero_serie: entry for entry in entries}
+        pattern = (
+            SerialPattern.infer_from_catalog(list(fresh)) if fresh else DEFAULT_PATTERN
+        )
+        self._entries = fresh
+        self._pattern = pattern
 
     def _refresh_pattern(self) -> None:
         if self._entries:

@@ -53,7 +53,7 @@ async def ready(
         ComponentStatus(
             name="catalog",
             ready=not container.catalog.is_empty,
-            detail=f"{len(container.catalog)} cilindros cargados",
+            detail=container.catalog_sync.status.describe(),
         ),
         ComponentStatus(
             name="thresholds",
@@ -79,5 +79,9 @@ async def version(container: ServiceContainer = Depends(get_container)) -> Versi
         detector_backend=container.detector.describe(),
         ocr_backend=container.ocr_engine.describe(),
         catalog_size=len(container.catalog),
+        catalog_source=(
+            "supabase+estatico" if container.catalog_sync.enabled else "estatico"
+        ),
+        catalog_last_sync=container.catalog_sync.status.last_success_at,
         thresholds_calibrated=settings.thresholds_calibrated,
     )

@@ -6,6 +6,8 @@ con ese cilindro, qué movimiento registrar) corresponde al backend principal.
 """
 from __future__ import annotations
 
+import asyncio
+import contextlib
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
@@ -37,7 +39,14 @@ async def lifespan(app: FastAPI):
     # prioridad: reconstruirlo aquí descartaría la configuración de prueba.
     container = getattr(app.state, "container", None) or build_container(settings)
     await container.backend.startup()
+    await container.catalog_sync.startup()
     app.state.container = container
+
+    # Refresco periódico del catálogo desde Supabase, en segundo plano.
+    sync_task = (
+        asyncio.create_task(container.catalog_sync.run_forever())
+        if container.catalog_sync.enabled else None
+    )
 
     if container.detector.name == "heuristic":
         logger.warning(
@@ -51,6 +60,11 @@ async def lifespan(app: FastAPI):
     try:
         yield
     finally:
+        if sync_task is not None:
+            sync_task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await sync_task
+        await container.catalog_sync.shutdown()
         await container.backend.shutdown()
         logger.info("servicio detenido")
 
@@ -132,15 +146,17 @@ app = FastAPI(
     openapi_url="/openapi.json",
 )
 
-# El consumidor previsto es el backend principal, no un navegador. CORS queda
-# abierto sólo fuera de producción, para poder probar desde herramientas web.
-if settings.environment != "prod":
+# La aplicación móvil llama al servicio desde un webview (Capacitor) o un
+# navegador (ionic serve), así que necesita CORS también en producción. Los
+# orígenes se configuran con AI_CORS_ALLOW_ORIGINS; ver app/core/config.py.
+if settings.cors_origins:
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=settings.cors_origins,
         allow_credentials=False,
-        allow_methods=["*"],
+        allow_methods=["GET", "POST", "OPTIONS"],
         allow_headers=["*"],
+        expose_headers=["X-Request-ID"],
     )
 
 

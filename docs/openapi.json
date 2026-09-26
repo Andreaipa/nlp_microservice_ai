@@ -769,6 +769,7 @@
           "serial_too_short",
           "no_detector_model",
           "thresholds_not_calibrated",
+          "confirmation_required",
           "poor_image_quality"
         ],
         "title": "ReviewReason",
@@ -1010,6 +1011,24 @@
           "catalog_size": {
             "type": "integer",
             "title": "Catalog Size"
+          },
+          "catalog_source": {
+            "type": "string",
+            "title": "Catalog Source",
+            "description": "estatico | supabase+estatico: de dónde sale el catálogo.",
+            "default": "estatico"
+          },
+          "catalog_last_sync": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Catalog Last Sync",
+            "description": "Última sincronización correcta con Supabase (ISO 8601)."
           },
           "thresholds_calibrated": {
             "type": "boolean",

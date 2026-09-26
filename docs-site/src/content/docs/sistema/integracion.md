@@ -3,33 +3,119 @@ title: Integración con el backend
 description: Contrato, errores y reparto de responsabilidades.
 ---
 
+## Cómo está conectado
+
+La aplicación móvil **IdentCil** (Ionic + Angular + Capacitor) no tiene un
+servidor propio: su backend es **Supabase**, con el que habla directamente. El
+microservicio de IA se integra así:
+
+```
+                 ┌──────────── foto (multipart) ───────────┐
+                 │                                          ▼
+   App IdentCil ─┤                               Microservicio de IA
+   (Ionic)       │                                          │
+                 │◄──── serie propuesta + candidatos ───────┘
+                 │                                          │
+                 │                         lee la tabla `cilindros`
+                 │                         cada 60 s (catálogo)
+                 ▼                                          ▼
+              Supabase ◄────────────────────────────────────┘
+   (inventario, movimientos, trazabilidad)
+```
+
+- La **app** llama al microservicio con la foto y recibe la serie propuesta.
+- El **operario confirma** o corrige el número en un modal: la IA nunca
+  registra nada por su cuenta.
+- A partir de ahí la app sigue su flujo de siempre: consulta el estado del
+  cilindro y su ficha en Supabase y guarda el movimiento.
+- El **microservicio lee la tabla `cilindros`** de Supabase para su catálogo,
+  así que un cilindro dado de alta en la app pasa a reconocerse en las fotos
+  sin reiniciar nada.
+
 ## Reparto de responsabilidades
 
-|                       | Microservicio IA             | Backend principal     |
-| --------------------- | ---------------------------- | --------------------- |
-| Pregunta que responde | "¿Qué veo en esta imagen?"   | "¿Qué hago con esto?" |
-| Conoce el inventario  | Sólo el catálogo de seriales | Sí, es su dueño       |
-| Decide movimientos    | No                           | Sí                    |
-| Guarda trazabilidad   | No                           | Sí                    |
-| Estado                | Sin estado                   | Con estado            |
+|                       | Microservicio IA            | App + Supabase                 |
+| --------------------- | --------------------------- | ------------------------------ |
+| Pregunta que responde | "¿Qué número veo?"          | "¿Qué cilindro es y qué hago?" |
+| Conoce el inventario  | Lo lee de Supabase          | Es su dueño                    |
+| Decide movimientos    | No                          | Sí                             |
+| Guarda trazabilidad   | Su auditoría de inferencias | Los movimientos                |
 
-El microservicio nunca decide si un cilindro entra, sale o se despacha. Informa
-de lo que leyó y de su confianza.
+## Qué hace la aplicación
 
-## Flujo previsto
+En las pantallas de **ingreso, salida y recojo** hay un tercer botón junto a la
+búsqueda y al escáner QR: fotografiar el troquelado. El flujo, compartido por
+las tres pantallas (`IdentificacionFotoService`):
+
+1. comprueba que el servicio responde (`GET /api/v1/health`), para no hacer
+   una foto que luego no se pueda analizar;
+2. la primera vez, explica cómo encuadrar: es lo que más influye en el
+   resultado (60% de acierto de cerca frente a 13% de lejos);
+3. abre la cámara o la galería y envía la foto;
+4. muestra la foto, la serie propuesta, las alternativas del inventario y el
+   motivo por el que conviene revisarla;
+5. el operario confirma, corrige o repite la foto.
+
+## Trazabilidad
+
+La app genera un `X-Request-ID` por petición. El microservicio lo registra en su
+auditoría (con las detecciones, la lectura y, si hubo que revisar, la foto) y la
+app lo guarda con el movimiento. Así cada ingreso se puede enlazar con la
+inferencia exacta que lo produjo.
+
+Cada cilindro de un ingreso, una salida o el reingreso de un recojo guarda en
+su JSONB:
+
+```json
+{
+  "numero_serie": "19S206055",
+  "metodo_identificacion": "foto",
+  "ia": {
+    "request_id": "app-e6a40d7b56f945a9",
+    "model_version": "detector:onnx:detector.onnx|ocr:rapid:onnxruntime|parser:1.0.0",
+    "serie_propuesta": "19S206055",
+    "confianza": 0.676,
+    "corregido": false
+  }
+}
+```
+
+`metodo_identificacion` vale `foto`, `qr`, `lista` o `manual`, y `corregido`
+indica si el operario cambió el número que propuso la IA. Con eso se puede
+medir en operación real cuántas identificaciones se hacen por foto y cuántas
+lecturas hubo que corregir. Va dentro de las columnas JSONB existentes, así que
+**no requiere migrar el esquema**.
+
+La tabla `recojos` no se toca: tiene columnas fijas y un campo desconocido
+haría fallar el guardado. La traza del recojo va en el reingreso que el propio
+recojo deja en `ingreso_cilindros`.
+
+## Configuración
+
+En el microservicio:
 
 ```
-App móvil ──foto──► Backend ──multipart──► Microservicio IA
-                       │                          │
-                       │◄────── JSON ─────────────┘
-                       │
-                       ├─ requires_manual_confirmation = false
-                       │     └─ registra el movimiento
-                       │
-                       └─ requires_manual_confirmation = true
-                             └─ muestra al operario los candidatos
-                                y pide confirmación
+AI_SUPABASE_URL=https://<proyecto>.supabase.co
+AI_SUPABASE_KEY=<clave anon>
+AI_CORS_ALLOW_ORIGINS=http://localhost:8100,http://localhost,capacitor://localhost
 ```
+
+El servicio sólo **lee** la tabla `cilindros`, así que le basta la clave
+pública (anon) siempre que las políticas RLS permitan esa lectura sin sesión.
+Las políticas propuestas para la app (`IdentCil-main/supabase/politicas_rls.sql`)
+la permiten sólo en `cilindros`, que no contiene datos personales, y cierran el
+resto de tablas. Si la lectura falla, el servicio no se detiene: sigue con el
+catálogo estático y `/api/v1/ready` muestra el error de sincronización.
+
+En la app, `src/environments/environment.ts`:
+
+```ts
+aiServiceUrl: 'http://localhost:8000';
+```
+
+Para probar desde un móvil real en la misma red, sustituya `localhost` por la
+IP del equipo que ejecuta el servicio: desde el móvil, "localhost" es el
+propio móvil.
 
 ## Endpoint principal
 
@@ -86,6 +172,7 @@ sus logs y la devuelve; así una incidencia se puede rastrear de punta a punta.
    | `serial_not_in_catalog`       | "Ese cilindro no está en el inventario."                           |
    | `duplicate_serial_in_catalog` | "Ese número está registrado en más de un cilindro." Mostrar cuáles |
    | `serial_too_short`            | "El número grabado es demasiado corto. Verifíquelo."               |
+   | `confirmation_required`       | "Confirme que el número es correcto."                              |
    | `poor_image_quality`          | "Foto movida u oscura. Repítala."                                  |
    | `no_detector_model`           | Estado del sistema, no del usuario                                 |
    | `thresholds_not_calibrated`   | Estado del sistema, no del usuario                                 |

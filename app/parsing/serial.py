@@ -50,6 +50,16 @@ CONFUSABLE_PAIRS: frozenset[frozenset[str]] = frozenset(
      ("U", "V"), ("M", "N"), ("C", "G"), ("5", "6"), ("8", "0")]
 )
 
+# Longitud por debajo de la cual un serial no sirve como identificador fiable.
+#
+# Está en 7 por un fallo observado al medir sobre el conjunto de test: en una
+# fotografía del cilindro con serial "21S062189" el OCR leyó el fragmento
+# "20640", que resulta ser el serial COMPLETO del Cilindro_015. El sistema lo
+# habría dado por identificado y el movimiento habría quedado registrado en el
+# cilindro equivocado. Todo serial más corto queda marcado para confirmación
+# manual.
+MIN_RELIABLE_SERIAL_LENGTH = 7
+
 # Número mínimo de seriales necesarios para fijar una máscara posicional.
 # Con pocas muestras, deducir que "la posición 2 es siempre una letra" es
 # sobreajuste: bastaría un cilindro de otro lote para invalidarlo, y la máscara

@@ -529,7 +529,16 @@ class AnalysisPipeline:
         if match.status is not MatchStatus.MATCHED:
             return True
 
-        if confidence < self._settings.serial_auto_accept_confidence:
+        # Un umbral de 1.00 significa "no aceptar nunca de forma automática",
+        # que es lo que concluyó la calibración. Hay que tratarlo como tal de
+        # forma explícita: la confianza por consenso puede valer exactamente
+        # 1.0 en una foto nítida, y con una comparación estricta ese caso
+        # pasaría como aceptado sin que ninguna persona lo viera.
+        auto_accept = self._settings.serial_auto_accept_confidence
+        if auto_accept >= 1.0:
+            review_reasons.append(ReviewReason.CONFIRMATION_REQUIRED)
+            return True
+        if confidence < auto_accept:
             review_reasons.append(ReviewReason.LOW_OCR_CONFIDENCE)
             return True
 
