@@ -60,8 +60,16 @@ Variables opcionales: `AWS_REGION` (`us-east-1`), `SERVICE_NAME`
 (`ai-cylinder-service`), `TASK_CPU` (`1024`), `TASK_MEMORY` (`2048`),
 `MIN_TASKS` (`1`) y `MAX_TASKS` (`2`).
 
-La primera vez, AWS tarda unos 10 minutos en crear el balanceador y la red;
-las actualizaciones, unos 3–5. Si se abre la URL **antes** de que exista, el
+La primera vez, AWS tarda unos 10 minutos en crear el balanceador y la red.
+
+**Las actualizaciones son graduales (canario).** La versión nueva arranca en 3–5
+minutos, pero al principio sólo recibe una de cada ocho peticiones mientras ECS
+vigila que no dé errores; la anterior atiende el resto. El cambio completo
+tarda unos 15–20 minutos más, y hasta entonces un probador puede recibir
+respuestas de cualquiera de las dos versiones. El script espera a que termine.
+Si la versión nueva da errores, ECS vuelve a la anterior automáticamente.
+
+Si se abre la URL **antes** de que exista, el
 router puede recordar durante un buen rato que "no existe" y el navegador no
 la encontrará aunque ya funcione. Se soluciona solo, o probando desde otra red
 (datos móviles). El script hace sus comprobaciones con un DNS público para no

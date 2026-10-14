@@ -180,6 +180,24 @@ done
   revise los eventos:  aws ecs describe-services --cluster ${CLUSTER} --services ${SERVICE}
   y los logs:          aws logs tail ${LOG_GROUP} --since 30m"
 
+step "Esperando a que la versión nueva reciba todo el tráfico"
+# Express Mode despliega en canario: la versión nueva recibe al principio
+# una fracción pequeña de las peticiones mientras ECS vigila que no dé
+# errores, y la anterior sigue atendiendo el resto. Hasta que el despliegue
+# termina, un usuario puede recibir respuestas de cualquiera de las dos.
+ROLLOUT=""
+for _ in $(seq 1 80); do  # hasta 40 minutos
+  ROLLOUT="$(aws ecs describe-services --cluster "$CLUSTER" --services "$SERVICE" \
+    --query "services[0].deployments[?status=='PRIMARY'].rolloutState | [0]" --output text)"
+  ACTIVE="$(aws ecs describe-services --cluster "$CLUSTER" --services "$SERVICE" \
+    --query "length(services[0].deployments)" --output text)"
+  [[ "$ROLLOUT" == "COMPLETED" && "$ACTIVE" == "1" ]] && break
+  [[ "$ROLLOUT" == "FAILED" ]] && fail "ECS revirtió el despliegue: la versión ${TAG} dio errores.
+  La versión anterior sigue en servicio. Revise: aws logs tail ${LOG_GROUP} --since 30m"
+  sleep 30
+done
+[[ "$ROLLOUT" == "COMPLETED" ]] || echo "Aviso: el despliegue sigue en curso; la versión anterior aún atiende parte del tráfico."
+
 printf '\nListo.\n  URL:      https://%s\n  Imagen:   %s\n  Revisión: %s\n\n' "$ENDPOINT" "$IMAGE" "$TD_ARN"
 check /api/v1/ready || true
 echo
