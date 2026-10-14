@@ -47,7 +47,10 @@ CONFUSABLE_PAIRS: frozenset[frozenset[str]] = frozenset(
     frozenset(pair) for pair in
     [("O", "0"), ("Q", "0"), ("D", "0"), ("I", "1"), ("L", "1"), ("T", "7"),
      ("Z", "2"), ("E", "3"), ("A", "4"), ("S", "5"), ("G", "6"), ("B", "8"),
-     ("U", "V"), ("M", "N"), ("C", "G"), ("5", "6"), ("8", "0")]
+     ("U", "V"), ("M", "N"), ("C", "G"), ("5", "6"), ("8", "0"),
+     # Observado en las pruebas con teléfono: la "K" troquelada de la serie
+     # K57... se leyó como "1" ("15732" por "K5732").
+     ("K", "1")]
 )
 
 # Longitud por debajo de la cual un serial no sirve como identificador fiable.
@@ -76,6 +79,37 @@ _LABEL_WORD = re.compile(
     re.IGNORECASE,
 )
 _ALLOWED_CHARS = re.compile(r"[^A-Z0-9]")
+
+# Otras marcas del cilindro que no son el serial: presiones de trabajo y de
+# prueba (PW200, PH300, TP 250 BAR, WP...), fechas de fabricación o de prueba
+# (2021/05, 09-19) y el número ONU del gas de la etiqueta (UN1006, ONU1072).
+# En las pruebas con teléfono, "PW200" se propuso como serial ("200", "W200")
+# porque el OCR lo leía con más confianza que el número real.
+_NON_SERIAL_MARKING = re.compile(
+    r"P[WHT]\s*\d|\b(?:TP|TW|WP)\s*\d|BAR\b|\bKG\b|\b(?:O?NU|UN)\s*\d{4}\b"
+    r"|\b(?:19|20)\d{2}\s*[/.\-]\s*\d{1,2}\b|\b\d{1,2}\s*[/.\-]\s*(?:19|20)?\d{2}\b",
+)
+
+# Longitud mínima para proponer al operario una lectura que NO coincide con
+# ningún cilindro del inventario. Por debajo es casi siempre un fragmento
+# ("060", "200") y proponerlo confunde más de lo que ayuda: es mejor dejar el
+# campo vacío y pedir otra foto.
+MIN_UNMATCHED_PROPOSAL_LENGTH = 6
+
+
+def is_non_serial_marking(text: str) -> bool:
+    """True si el texto es una marca del troquelado que no es el serial."""
+    return bool(_NON_SERIAL_MARKING.search(text.upper()))
+
+
+def allowed_errors(serial: str) -> int:
+    """Errores de lectura tolerados para dar por identificado un serial.
+
+    Proporcional a la longitud: dos caracteres mal leídos sobre nueve dejan el
+    serial reconocible; sobre tres ("300" frente a "804") lo convierten en otro
+    número. Con menos de 6 caracteres sólo vale la coincidencia exacta.
+    """
+    return 0 if len(serial) < 6 else len(serial) // 4
 
 
 @dataclass(frozen=True)
@@ -237,6 +271,8 @@ def extract_serial_candidates(
 
         fragments = [raw_text, *re.split(r"[\s|/\\]+", raw_text)]
         for fragment in fragments:
+            if is_non_serial_marking(fragment):
+                continue
             normalized = normalize_serial_charset(fragment)
             if not normalized or len(normalized) < pattern.min_length:
                 continue
@@ -300,6 +336,54 @@ def weighted_edit_distance(left: str, right: str) -> float:
             ))
         previous = current
     return previous[-1]
+
+
+def _canonical(text: str) -> str:
+    """Reduce cada carácter a su clase de confusión ("S" y "5" son lo mismo)."""
+    return "".join(LETTER_TO_DIGIT.get(c, "1" if c == "K" else c) for c in text)
+
+
+def _bigrams(text: str) -> set[str]:
+    return {text[i:i + 2] for i in range(len(text) - 1)}
+
+
+def fuzzy_substring_distance(serial: str, text: str, *, limit: float | None = None) -> float:
+    """Distancia de `serial` a la parte de `text` que mejor lo explica.
+
+    El OCR rara vez devuelve el serial limpio: lo rodea de ruido ("2K5738060",
+    "JD K573306001") o lo une a otras marcas del troquelado. Aquí el serial
+    tiene que aparecer completo, pero lo que lo rodea en el texto no cuesta
+    nada (alineamiento semiglobal con los costes de `weighted_edit_distance`).
+
+    `limit` permite descartar rápido: si el serial no puede estar a esa
+    distancia o menos, se devuelve infinito sin calcular la alineación.
+    """
+    if not serial:
+        return 0.0
+    if not text:
+        return float(len(serial))
+
+    if limit is not None:
+        # Si nada más que `limit` errores (sin contar confusiones típicas, que
+        # el paso a clases de confusión deja como iguales), el serial y el
+        # texto comparten al menos len-1-2*limit bigramas.
+        needed = len(serial) - 1 - 2 * int(limit)
+        if needed > 0 and len(_bigrams(_canonical(serial)) & _bigrams(_canonical(text))) < needed:
+            return float("inf")
+
+    previous = [0.0] * (len(text) + 1)  # empezar en cualquier punto del texto es gratis
+    for i, char_serial in enumerate(serial, start=1):
+        current = [float(i)] + [0.0] * len(text)
+        for j, char_text in enumerate(text, start=1):
+            if char_serial == char_text:
+                cost = 0.0
+            elif frozenset((char_serial, char_text)) in CONFUSABLE_PAIRS:
+                cost = 0.5
+            else:
+                cost = 1.0
+            current[j] = min(previous[j] + 1.0, current[j - 1] + 1.0, previous[j - 1] + cost)
+        previous = current
+    return min(previous)  # y terminar en cualquier punto, también
 
 
 def consensus_candidates(

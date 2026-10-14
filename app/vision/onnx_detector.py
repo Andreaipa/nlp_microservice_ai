@@ -35,8 +35,12 @@ class OnnxDetector:
         conf_threshold: float = 0.25,
         iou_threshold: float = 0.45,
         max_detections: int = 50,
+        threads: int = 0,
     ) -> None:
         self._model_path = Path(model_path)
+        # 0 deja decidir a ONNX Runtime, que en un contenedor ve todos los
+        # núcleos de la máquina (ver app/core/cpu.py).
+        self._threads = threads
         self._input_size = input_size
         self._conf = conf_threshold
         self._iou = iou_threshold
@@ -71,7 +75,13 @@ class OnnxDetector:
                 providers.insert(0, gpu_provider)
                 break
 
-        self._session = ort.InferenceSession(str(self._model_path), providers=providers)
+        options = ort.SessionOptions()
+        if self._threads > 0:
+            options.intra_op_num_threads = self._threads
+            options.inter_op_num_threads = 1
+        self._session = ort.InferenceSession(
+            str(self._model_path), sess_options=options, providers=providers
+        )
         model_input = self._session.get_inputs()[0]
         self._input_name = model_input.name
 

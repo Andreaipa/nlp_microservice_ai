@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+import cv2
 from fastapi import Request
 
 from app.core.config import Settings, get_settings
@@ -39,6 +40,10 @@ class ServiceContainer:
 
 def build_container(settings: Settings | None = None) -> ServiceContainer:
     settings = settings or get_settings()
+
+    # OpenCV también crea un hilo por núcleo visible; se alinea con ONNX Runtime.
+    cv2.setNumThreads(settings.inference_threads)
+    logger.info("hilos de inferencia", extra={"hilos": settings.inference_threads})
 
     detector = build_detector(settings)
     ocr_engine = build_ocr_engine(settings)

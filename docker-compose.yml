@@ -3,6 +3,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      # La etapa final (deploy) lleva el modelo dentro; aquí se monta como volumen.
+      target: runtime
       args:
         # rapid (ligero, recomendado) | paddle (más cobertura, ~1,6 GB) | none
         OCR: '${OCR_ENGINE:-rapid}'

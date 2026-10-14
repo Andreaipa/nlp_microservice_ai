@@ -43,18 +43,20 @@ Detector, sobre cilindros no vistos en entrenamiento:
 Sistema completo, sobre las 90 imágenes de test (15 cilindros nunca vistos):
 
 ```
-identificación correcta ........ 22.2%   (60% en tomas cercanas)
+identificación correcta ........ 31.1%   (60% en tomas cercanas)
+correcto o entre las 4 opciones  40.0%
 errores silenciosos ............  0.0%
 requiere confirmación manual ... 100.0%
-CER medio del serial ...........  0.537
-latencia mediana / p95 ......... 667 ms / 1356 ms
+CER medio del serial ...........  0.254
+latencia mediana / p95 ......... 857 ms / 1682 ms
 ```
 
-| Condición                                        | Acierto |
-| ------------------------------------------------ | ------- |
-| **3.Cerca**                                      | **60%** |
-| 1.Frontal                                        | 20%     |
-| 2.Diagonal · 4.Lejos · 5.Luz normal · 6.Poca luz | 13%     |
+| Condición                             | Acierto |
+| ------------------------------------- | ------- |
+| **3.Cerca**                           | **60%** |
+| 6.Poca luz                            | 33%     |
+| 1.Frontal · 2.Diagonal · 5.Luz normal | 27%     |
+| 4.Lejos                               | 13%     |
 
 **Cómo leer estas cifras.** El sistema no identifica de forma autónoma: sirve
 como asistente con confirmación humana, que es el modo en que está
@@ -63,33 +65,37 @@ tasa de errores silenciosos es cero.
 
 La diferencia entre el 60% de las tomas cercanas y el 13% de las lejanas es el
 dato más accionable del proyecto: **que la aplicación móvil obligue a
-acercarse al collarín triplica el acierto**, sin tocar una línea del modelo.
+acercarse al collarín multiplica el acierto**, sin tocar una línea del modelo.
+En las fotos frontales, de lejos o con poca luz, el troquelado del hombro ni
+siquiera es visible: ningún algoritmo puede leerlo.
 
-El cuello de botella ya no es la detección —`marking_area` se localiza con
-confianza ~0.83— sino **leer caracteres troquelados sobre metal oxidado**: un
-CER de 0.537 significa que más de la mitad de los caracteres se leen mal. Un
-reconocedor genérico no da más de sí en este dominio.
+### Lo que enseñaron las pruebas con teléfono
 
-### Por qué no basta con proponer candidatos
+Las primeras pruebas con la app sobre cilindros reales (serie `K57…`, el 31%
+del inventario) mostraron que buena parte del fallo no era del OCR sino de
+cómo se interpretaba lo leído:
 
-Una salida razonable para un sistema con acierto bajo es no exigir la lectura
-exacta y ofrecer al operario los cilindros más parecidos, para que elija de una
-lista corta. Se midió:
+- El troquelado lleva un espacio en medio ("K5738 060") y el OCR lo devolvía
+  en dos trozos que nadie volvía a unir.
+- Se proponía el fragmento leído con más confianza, que solía ser otra marca
+  ("PW200", la presión de trabajo), en lugar del que existía en el inventario.
+- Con un umbral de error fijo, "300" se daba por el cilindro "804".
+- De las tres variantes de realce, sólo contaba de verdad la "mejor": las
+  lecturas de las otras se descartaban.
 
-|                                     | Acierto |
-| ----------------------------------- | ------- |
-| El correcto es el primero propuesto | 22%     |
-| Está entre los tres primeros        | 23%     |
-| Está entre los cinco primeros       | 26%     |
+La corrección busca cada serial del inventario **dentro** de todo lo leído,
+une los trozos de una misma línea, tolera errores en proporción a la longitud
+del serial y descarta las marcas que no son seriales (presiones, fechas,
+número ONU). Con ella, ofrecer alternativas sí sirve:
 
-La diferencia entre el primero y los cinco primeros es de cuatro puntos. Es
-decir: **cuando el OCR falla, no falla por poco**. No devuelve un serial
-parecido al correcto, devuelve otra cosa o nada (22 de 90 imágenes sin ningún
-candidato). Ofrecer una lista de sugerencias no rescata esos casos.
+|                                       | Antes | Ahora   |
+| ------------------------------------- | ----- | ------- |
+| El correcto es el propuesto           | 22%   | **31%** |
+| El correcto está entre las 4 opciones | 24%   | **40%** |
+| Propone un número equivocado          | 53%   | **27%** |
 
-Este resultado descarta el camino de la "identificación asistida por
-candidatos" como forma de compensar el acierto del OCR, y deja el foco donde
-estaba: o se lee el troquelado, o no hay identificación.
+Con menos propuestas equivocadas, cuando el sistema no está seguro deja el
+campo vacío y pide otra foto en lugar de sugerir un número que confunde.
 
 ### Qué movió y qué no
 
@@ -99,10 +105,11 @@ estaba: o se lee el troquelado, o no hay identificación.
 | Corregir el filtro de posición vertical | anotaciones 92 → 326                      |
 | Detector entrenado (72 → 247 imágenes)  | mAP50 0.147 → 0.301                       |
 | Emparejamiento por fragmento            | acierto 18,9% → 22,2%; cercanas 47% → 60% |
+| Buscar el serial dentro de lo leído     | acierto 22,2% → 31,1%; CER 0.537 → 0.254  |
 
-Entrenar el detector mejoró la latencia y la calidad de los recortes, pero
-**no la precisión de identificación**: el límite estaba, y sigue estando, en
-el reconocimiento de caracteres.
+Entrenar el detector mejoró la latencia y la calidad de los recortes, pero no
+la precisión de identificación. Lo que sí la movió fue aprovechar mejor lo que
+el OCR ya leía, contrastándolo con el inventario cerrado.
 
 ## Qué incluye el repositorio y qué no
 

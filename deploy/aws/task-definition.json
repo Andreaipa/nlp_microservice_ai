@@ -1,0 +1,40 @@
+{
+  "family": "${SERVICE}",
+  "requiresCompatibilities": ["FARGATE"],
+  "networkMode": "awsvpc",
+  "cpu": "${CPU}",
+  "memory": "${MEMORY}",
+  "runtimePlatform": {
+    "cpuArchitecture": "ARM64",
+    "operatingSystemFamily": "LINUX"
+  },
+  "executionRoleArn": "arn:aws:iam::${ACCOUNT}:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "name": "Main",
+      "image": "${IMAGE}",
+      "essential": true,
+      "portMappings": [
+        {
+          "name": "http",
+          "containerPort": 8000,
+          "protocol": "tcp",
+          "appProtocol": "http"
+        }
+      ],
+      "environment": [
+        { "name": "AI_BUILD_ID", "value": "${TAG}" },
+        { "name": "AI_SUPABASE_URL", "value": "${SUPABASE_URL}" },
+        { "name": "AI_SUPABASE_KEY", "value": "${SUPABASE_KEY}" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/${SERVICE}",
+          "awslogs-region": "${REGION}",
+          "awslogs-stream-prefix": "ai"
+        }
+      }
+    }
+  ]
+}

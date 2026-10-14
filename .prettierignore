@@ -17,6 +17,7 @@ docs/openapi.json
 # aquí las desincronizaría de su fuente y haría fallar `sync_docs.py --check`.
 # El Markdown original sí se formatea: basta con corregirlo en docs/.
 docs-site/src/content/docs/guias/puesta-en-marcha.md
+docs-site/src/content/docs/guias/despliegue-aws.md
 docs-site/src/content/docs/sistema/arquitectura.md
 docs-site/src/content/docs/sistema/rendimiento.md
 docs-site/src/content/docs/sistema/umbrales.md

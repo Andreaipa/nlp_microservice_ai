@@ -76,6 +76,28 @@ AI_MAX_IMAGE_SIDE=2048
 AI_DETECTOR_INPUT_SIZE=960
 ```
 
+### En un contenedor con CPU limitada (Docker, AWS ECS)
+
+Dentro de un contenedor, las librerías ven todos los núcleos de la máquina,
+no los que el contenedor puede usar. ONNX Runtime y OpenCV crean un hilo por
+núcleo visto, y si son muchos más que la CPU permitida el sistema los frena
+continuamente. Medido con 1 vCPU sobre un equipo de 18 núcleos:
+
+| Hilos                                    | Tiempo por foto     |
+| ---------------------------------------- | ------------------- |
+| Los que decide la librería (18)          | 28 – 47 s           |
+| Sólo el OCR limitado a 1                 | 3,6 – 3,8 s         |
+| **Detector, OCR y OpenCV ajustados (1)** | **1,5 s (mediana)** |
+
+Por eso `AI_OCR_THREADS=0` no significa "lo que decida la librería", sino la
+CPU que el proceso puede usar de verdad, leída de la cuota del contenedor
+(`app/core/cpu.py`). Con 2 vCPU la mediana baja a 1,1 s.
+
+Las peticiones simultáneas esperan turno (`AI_MAX_CONCURRENT_ANALYSES=1`):
+cuatro fotos enviadas a la vez con 1 vCPU tardan 1,4 / 2,8 / 4,1 / 5,5 s, y
+mientras tanto `/health` sigue respondiendo en ~13 ms, porque el análisis se
+ejecuta fuera del bucle de eventos.
+
 ### Qué se beneficiaría de GPU
 
 Sólo el reconocimiento OCR y, marginalmente, el detector. El preprocesado y el
@@ -100,8 +122,8 @@ utilizable, así que **la GPU no es un requisito** sino una mejora si aparece.
 
 |                     | Con PaddleOCR | Con RapidOCR |
 | ------------------- | ------------- | ------------ |
-| Imagen Docker       | ~1,6 GB       | ~700 MB      |
-| Memoria por proceso | ~1,5 GB       | ~400 MB      |
+| Imagen Docker       | ~1,6 GB       | ~720 MB      |
+| Memoria por proceso | ~1,5 GB       | ~650 MB      |
 
 En un equipo de gama media esa diferencia decide si se puede ejecutar el
 servicio junto a otras cosas o no.

@@ -10,7 +10,9 @@ hueco explícito es mucho menos dañino que un dato inventado.
 """
 from __future__ import annotations
 
+import asyncio
 import time
+from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
@@ -19,12 +21,21 @@ from app.core.config import Settings
 from app.core.logging import get_logger
 from app.observability.audit import AuditLog
 from app.ocr.base import OcrEngine
+from app.ocr.layout import is_plausible_text_box, join_split_lines
 from app.parsing.fields import parse_fields
-from app.parsing.serial import SerialCandidate, consensus_candidates
+from app.parsing.serial import (
+    MIN_UNMATCHED_PROPOSAL_LENGTH,
+    SerialCandidate,
+    allowed_errors,
+    consensus_candidates,
+    fuzzy_substring_distance,
+    normalize_serial_charset,
+)
 from app.preprocessing import enhance, image_io
 from app.schemas.analyze import (
     AnalyzeResponse,
     BackendMatch,
+    ImageQuality,
     MatchStatus,
     ReviewReason,
     SerialMatch,
@@ -36,22 +47,6 @@ from app.services.catalog import CylinderCatalog
 from app.vision.base import DetectionClass, Detector
 
 logger = get_logger(__name__)
-
-# Relación ancho/alto mínima para aceptar una línea leída sobre la imagen
-# completa. El troquelado se lee en horizontal, así que su caja es más ancha
-# que alta.
-#
-# El filtro existe por un caso observado en el dataset real: sobre el cuerpo
-# de un cilindro cubierto de pintura descascarada, el motor OCR devolvió una
-# cadena muy parecida a un número de serie con 0.96 de confianza, en una caja
-# vertical, donde al ampliar la imagen no había texto alguno. La confianza que
-# informa el OCR no basta para descartar ese caso; la geometría sí.
-#
-# Se asume que la fotografía llega en la orientación en que se tomó, que es
-# el caso del dataset: envase vertical y troquelado horizontal. Si en el
-# futuro se admitieran fotos giradas 90 grados habría que corregir la
-# orientación antes del OCR, no relajar este filtro.
-MIN_TEXT_ASPECT_RATIO = 1.2
 
 # Cuántos candidatos a número de serie se contrastan contra el inventario.
 MAX_CANDIDATES_CHECKED = 25
@@ -73,6 +68,21 @@ _SERIAL_REASONS = frozenset({
     ReviewReason.AMBIGUOUS_CATALOG_MATCH,
 })
 
+@dataclass
+class _ImageStage:
+    """Resultado de la parte de CPU del análisis (ver `_analyze_image`)."""
+
+    image: np.ndarray
+    quality: ImageQuality
+    detections: list[Detection]
+    ocr_lines: list[OcrLine]
+    data: CylinderData
+    serial_candidate: SerialCandidate | None
+    match: SerialMatch
+    warnings: list[str]
+    review_reasons: list[ReviewReason]
+
+
 class AnalysisPipeline:
     def __init__(
         self,
@@ -90,6 +100,10 @@ class AnalysisPipeline:
         self._catalog = catalog
         self._backend = backend
         self._audit = audit
+        # Análisis simultáneos. Cada uno ocupa CPU y memoria (la imagen y sus
+        # variantes); los que excedan el límite esperan su turno en vez de
+        # competir por la CPU y alargar todos.
+        self._cpu_slots = asyncio.Semaphore(settings.max_concurrent_analyses)
 
     # -- descripción del montaje --------------------------------------------
     @property
@@ -108,6 +122,65 @@ class AnalysisPipeline:
     async def analyze(self, payload: bytes, *, request_id: str) -> AnalyzeResponse:
         started = time.perf_counter()
 
+        # Decodificar, detectar y leer cuesta uno o varios segundos de CPU. Se
+        # hace en un hilo para no bloquear el bucle de eventos: si no, mientras
+        # se analiza una foto el servicio no responde a nada más, ni siquiera a
+        # /health, y un balanceador lo daría por caído. ONNX Runtime y OpenCV
+        # liberan el GIL durante el cálculo.
+        async with self._cpu_slots:
+            stage = await asyncio.to_thread(self._analyze_image, payload)
+        image, quality, detections = stage.image, stage.quality, stage.detections
+        ocr_lines, data, match = stage.ocr_lines, stage.data, stage.match
+        serial_candidate = stage.serial_candidate
+        warnings, review_reasons = stage.warnings, stage.review_reasons
+
+        backend_match = await self._enrich_from_backend(data, match)
+
+        needs_review = self._decide_review(
+            serial_candidate, match, review_reasons,
+        )
+
+        elapsed_ms = int((time.perf_counter() - started) * 1000)
+        response = AnalyzeResponse(
+            success=True,
+            request_id=request_id,
+            service_version=self._settings.service_version,
+            model_version=self.model_version,
+            processing_time_ms=elapsed_ms,
+            requires_manual_confirmation=needs_review,
+            review_reasons=sorted(set(review_reasons), key=lambda r: r.value),
+            data=data,
+            match=match,
+            backend_match=backend_match,
+            detections=detections,
+            ocr_lines=ocr_lines,
+            image_quality=quality,
+            warnings=warnings,
+        )
+
+        # Escribe a disco (y codifica la imagen si hay que revisarla).
+        await asyncio.to_thread(
+            self._audit.record,
+            request_id=request_id,
+            payload=self._audit_payload(response),
+            image=image,
+            needs_review=needs_review,
+        )
+        logger.info(
+            "analisis completado",
+            extra={
+                "processing_time_ms": elapsed_ms,
+                "detections": len(detections),
+                "ocr_lines": len(ocr_lines),
+                "serial": data.numero_serie.value,
+                "match_status": match.status.value,
+                "requires_manual_confirmation": needs_review,
+            },
+        )
+        return response
+
+    def _analyze_image(self, payload: bytes) -> _ImageStage:
+        """Parte de CPU del análisis. Se ejecuta fuera del bucle de eventos."""
         image = image_io.decode_image(payload, max_bytes=self._settings.max_upload_bytes)
         image, _ = image_io.limit_size(image, self._settings.max_image_side)
         quality = image_io.assess_quality(image)
@@ -146,9 +219,6 @@ class AnalysisPipeline:
         # diagnóstico que dejó de ser cierto.
         if detections and match.status is not MatchStatus.MATCHED:
             whole_lines, whole_readings = self._read_single(image, region_label=None)
-            whole_lines, whole_readings = self._drop_implausible_text(
-                whole_lines, whole_readings
-            )
             if whole_readings:
                 combined = variant_readings + whole_readings
                 retry_reasons: list[ReviewReason] = []
@@ -198,48 +268,17 @@ class AnalysisPipeline:
                     review_reasons.append(ReviewReason.SERIAL_TOO_SHORT)
 
         self._enrich_from_catalog(data, match)
-        backend_match = await self._enrich_from_backend(data, match)
-
-        needs_review = self._decide_review(
-            serial_candidate, match, review_reasons,
-        )
-
-        elapsed_ms = int((time.perf_counter() - started) * 1000)
-        response = AnalyzeResponse(
-            success=True,
-            request_id=request_id,
-            service_version=self._settings.service_version,
-            model_version=self.model_version,
-            processing_time_ms=elapsed_ms,
-            requires_manual_confirmation=needs_review,
-            review_reasons=sorted(set(review_reasons), key=lambda r: r.value),
-            data=data,
-            match=match,
-            backend_match=backend_match,
+        return _ImageStage(
+            image=image,
+            quality=quality,
             detections=detections,
             ocr_lines=ocr_lines,
-            image_quality=quality,
+            data=data,
+            serial_candidate=serial_candidate,
+            match=match,
             warnings=warnings,
+            review_reasons=review_reasons,
         )
-
-        self._audit.record(
-            request_id=request_id,
-            payload=self._audit_payload(response),
-            image=image,
-            needs_review=needs_review,
-        )
-        logger.info(
-            "analisis completado",
-            extra={
-                "processing_time_ms": elapsed_ms,
-                "detections": len(detections),
-                "ocr_lines": len(ocr_lines),
-                "serial": data.numero_serie.value,
-                "match_status": match.status.value,
-                "requires_manual_confirmation": needs_review,
-            },
-        )
-        return response
 
     # -- etapas --------------------------------------------------------------
     def _detect(
@@ -278,9 +317,7 @@ class AnalysisPipeline:
         # Sin regiones de texto no se descarta la imagen: se intenta leerla
         # entera. Es peor no leer nada que leer con más ruido.
         if not text_regions:
-            return self._drop_implausible_text(
-                *self._read_single(image, region_label=None)
-            )
+            return self._read_single(image, region_label=None)
 
         # Las regiones más específicas primero: serial_text antes que el
         # collarín completo.
@@ -302,9 +339,6 @@ class AnalysisPipeline:
             region_lines, region_readings = self._read_single(
                 patch, region_label=detection.label,
                 offset=(detection.box.x1, detection.box.y1),
-            )
-            region_lines, region_readings = self._drop_implausible_text(
-                region_lines, region_readings
             )
             lines.extend(region_lines)
             readings.extend(region_readings)
@@ -343,10 +377,25 @@ class AnalysisPipeline:
             except Exception:
                 logger.exception("fallo del OCR", extra={"variante": variant_name})
                 continue
+            # La geometría se filtra en cada variante. Antes se filtraba sólo
+            # la mejor y se descartaba de las demás todo texto que no leyera
+            # ella, lo que anulaba el consenso: si otra variante leía mejor el
+            # serial, su lectura se perdía.
+            ignored = self._settings.ignored_reading_set
+            lines = [
+                line for line in lines
+                if is_plausible_text_box(line)
+                and normalize_serial_charset(line.text) not in ignored
+            ]
             if not lines:
                 continue
 
-            readings.append([(line.text, line.confidence) for line in lines])
+            # Las uniones sólo alimentan la búsqueda del serial; las líneas
+            # originales siguen siendo las que se devuelven.
+            joined = join_split_lines(lines)
+            readings.append(
+                [(line.text, line.confidence) for line in [*lines, *joined]]
+            )
 
             score = max(line.confidence for line in lines)
             if score > best_score:
@@ -362,35 +411,6 @@ class AnalysisPipeline:
                 ]
 
         return best, readings
-
-    @staticmethod
-    def _drop_implausible_text(
-        lines: list[OcrLine],
-        readings: list[list[tuple[str, float]]],
-    ) -> tuple[list[OcrLine], list[list[tuple[str, float]]]]:
-        """Descarta lecturas cuya forma no corresponde a un troquelado.
-
-        Las líneas sin caja se conservan: sin geometría no hay motivo para
-        dudar de ellas.
-        """
-        def plausible(line: OcrLine) -> bool:
-            if line.box is None:
-                return True
-            height = max(line.box.y2 - line.box.y1, 1.0)
-            return (line.box.x2 - line.box.x1) / height >= MIN_TEXT_ASPECT_RATIO
-
-        kept = [line for line in lines if plausible(line)]
-        dropped = len(lines) - len(kept)
-        if dropped:
-            logger.debug("lecturas descartadas por geometría",
-                         extra={"descartadas": dropped})
-
-        allowed = {line.text for line in kept}
-        filtered_readings = [
-            [(text, confidence) for text, confidence in reading if text in allowed]
-            for reading in readings
-        ]
-        return kept, [reading for reading in filtered_readings if reading]
 
     @staticmethod
     def _shift_box(box, offset, prepared: np.ndarray, original: np.ndarray):
@@ -412,8 +432,9 @@ class AnalysisPipeline:
     ) -> tuple[SerialCandidate | None, SerialMatch]:
         pattern = self._catalog.pattern
         candidates = consensus_candidates(readings, pattern)
+        texts = [text for reading in readings for text, _ in reading]
 
-        if not candidates:
+        if not texts or (not candidates and not self._settings.catalog_enabled):
             review_reasons.append(ReviewReason.NO_SERIAL_DETECTED)
             return None, SerialMatch(status=MatchStatus.NOT_ATTEMPTED)
 
@@ -424,32 +445,73 @@ class AnalysisPipeline:
             return best, SerialMatch(status=MatchStatus.NO_CATALOG,
                                      resolved_serial=best.text)
 
-        # Se resuelven varios candidatos porque el que encabeza la lista por
-        # confianza no siempre es el que existe en el inventario. El límite es
-        # generoso a propósito: sobre una fotografía real el OCR devuelve
-        # decenas de fragmentos y el bueno rara vez encabeza la lista. Probar
-        # sólo los cinco primeros dejaba fuera identificaciones correctas, y
-        # cada comprobación contra el catálogo es una comparación de cadenas.
-        fallback: tuple[SerialCandidate, SerialMatch] | None = None
+        # 1. Buscar cada serial del inventario dentro de todo lo leído. Es la
+        #    evidencia más fuerte: no depende de que el OCR haya aislado el
+        #    número ni de qué fragmento leyó con más confianza (en las pruebas
+        #    con teléfono, "PW200" se leía con 100% y el serial con menos).
+        match = self._catalog.search(texts)
+        if match.status is MatchStatus.MATCHED and match.resolved_serial:
+            return self._supporting_candidate(match.resolved_serial, readings), match
+
+        # 2. Candidatos aislados que sean un fragmento de un serial conocido:
+        #    el OCR suele perder los primeros caracteres, los más gastados
+        #    ("206055" por "19S206055"), y eso la búsqueda anterior no lo cubre.
         for candidate in candidates[:MAX_CANDIDATES_CHECKED]:
-            match = self._catalog.resolve(candidate.text)
-            if match.status is MatchStatus.MATCHED:
-                return candidate, match
-            if fallback is None:
-                fallback = (candidate, match)
+            resolved = self._catalog.resolve(candidate.text)
+            if resolved.status is MatchStatus.MATCHED:
+                return candidate, resolved
 
-        candidate, match = fallback if fallback else (
-            candidates[0], SerialMatch(status=MatchStatus.NOT_FOUND)
+        # 3. Sin identificación. Se propone una lectura sólo si tiene forma de
+        #    serial: un fragmento como "060" o "200" confunde más de lo que
+        #    ayuda. Las alternativas del inventario se ofrecen igualmente.
+        proposal = next(
+            (c for c in candidates if len(c.text) >= MIN_UNMATCHED_PROPOSAL_LENGTH), None
         )
-
         if match.status is MatchStatus.AMBIGUOUS:
             review_reasons.append(ReviewReason.AMBIGUOUS_CATALOG_MATCH)
-        elif match.status is MatchStatus.NOT_FOUND:
+        elif proposal is not None:
             review_reasons.append(ReviewReason.SERIAL_NOT_IN_CATALOG)
-        if not candidate.pattern_valid:
-            review_reasons.append(ReviewReason.SERIAL_FORMAT_INVALID)
+            if not proposal.pattern_valid:
+                review_reasons.append(ReviewReason.SERIAL_FORMAT_INVALID)
+        else:
+            review_reasons.append(ReviewReason.NO_SERIAL_DETECTED)
+        if match.status is MatchStatus.NOT_ATTEMPTED:
+            match = SerialMatch(status=MatchStatus.NOT_FOUND)
+        return proposal, match
 
-        return candidate, match
+    @staticmethod
+    def _supporting_candidate(
+        serial: str, readings: list[list[tuple[str, float]]]
+    ) -> SerialCandidate:
+        """La lectura que respalda un serial encontrado en el inventario.
+
+        Su confianza combina, como el consenso, en cuántas variantes de realce
+        aparece el serial y con qué confianza las leyó el OCR.
+        """
+        budget = allowed_errors(serial)
+        supporting: list[tuple[float, str, float]] = []  # distancia, texto, confianza
+        variants_with_support = 0
+        for reading in readings:
+            hits = [
+                (fuzzy_substring_distance(serial, normalize_serial_charset(text)), text, conf)
+                for text, conf in reading
+            ]
+            hits = [hit for hit in hits if hit[0] <= budget]
+            if hits:
+                variants_with_support += 1
+                supporting.extend(hits)
+        if not supporting:  # serial corto, encontrado como número exacto
+            return SerialCandidate(text=serial, confidence=0.0, raw=serial, pattern_valid=True)
+
+        _, raw, _ = min(supporting, key=lambda hit: (hit[0], -hit[2]))
+        agreement = variants_with_support / max(len([r for r in readings if r]), 1)
+        mean_confidence = sum(hit[2] for hit in supporting) / len(supporting)
+        return SerialCandidate(
+            text=normalize_serial_charset(raw),
+            confidence=round(min(1.0, 0.5 * agreement + 0.5 * mean_confidence), 4),
+            raw=raw.strip(),
+            pattern_valid=True,
+        )
 
     def _enrich_from_catalog(self, data: CylinderData, match: SerialMatch) -> None:
         """Completa huecos con el maestro local, sin pisar lo leído por IA."""

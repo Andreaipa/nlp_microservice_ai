@@ -33,6 +33,7 @@ def build_detector(settings: Settings) -> Detector:
                 conf_threshold=settings.detector_conf_threshold,
                 iou_threshold=settings.detector_iou_threshold,
                 max_detections=settings.detector_max_detections,
+                threads=settings.inference_threads,
             )
         else:
             from app.vision.ultralytics_detector import UltralyticsDetector

@@ -221,4 +221,8 @@ class VersionResponse(BaseModel):
         default=None,
         description="Última sincronización correcta con Supabase (ISO 8601).",
     )
+    build_id: str | None = Field(
+        default=None,
+        description="Imagen desplegada (commit y fecha); null fuera de un despliegue.",
+    )
     thresholds_calibrated: bool

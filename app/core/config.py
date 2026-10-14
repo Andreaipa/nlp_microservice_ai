@@ -10,8 +10,10 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
-from pydantic import field_validator
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from app.core.cpu import effective_cpu_count
 
 BASE_DIR = Path(__file__).resolve().parents[2]
 
@@ -36,6 +38,9 @@ class Settings(BaseSettings):
     # model_version identifica el conjunto (detector + ocr + parser) y viaja en
     # cada respuesta para poder auditar qué produjo un resultado.
     service_version: str = "1.0.0"
+    # Imagen desplegada (lo fija deploy/aws/deploy.sh). Sirve para saber qué
+    # versión está atendiendo sin entrar en la consola de AWS.
+    build_id: str | None = None
     model_version: str = "detector-none+ocr-paddle+parser-1.0.0"
 
     # --- Detección ----------------------------------------------------------
@@ -63,8 +68,10 @@ class Settings(BaseSettings):
     ocr_lang: str = "en"
     ocr_use_gpu: bool = False
     ocr_min_confidence: float = 0.30
-    # Hilos del motor OCR. 0 deja decidir a la librería; limitarlo evita que
-    # una sola petición acapare todos los núcleos del servidor.
+    # Hilos de inferencia (detector, OCR y OpenCV). 0 = la CPU que el proceso
+    # puede usar de verdad, cuota del contenedor incluida (app/core/cpu.py).
+    # No conviene dejarlo a la librería: en un contenedor ve todos los núcleos
+    # de la máquina y crea un hilo por cada uno.
     ocr_threads: int = 0
 
     # --- Reconocedor especializado del número de serie ----------------------
@@ -137,6 +144,15 @@ class Settings(BaseSettings):
         "image/heif",
     )
     max_image_side: int = 2048
+    # Lecturas que se sabe que no son un serial, separadas por comas: códigos
+    # de etiquetas que llevan muchos cilindros. P. ej. "1892847", el código de
+    # cliente de la etiqueta amarilla "ELECTRAMETAL NORPERU... TRUJILLO RETAIL",
+    # que el OCR leía en vez del troquelado.
+    ignored_readings: str = ""
+    # Análisis que se ejecutan a la vez; el resto espera turno. Cada análisis
+    # ya usa toda la CPU disponible (ver ocr_threads): ejecutar dos a la vez
+    # sólo reparte la CPU y alarga ambos.
+    max_concurrent_analyses: int = Field(default=1, ge=1)
 
     # --- Observabilidad -----------------------------------------------------
     log_level: str = "INFO"
@@ -160,6 +176,19 @@ class Settings(BaseSettings):
     @property
     def base_dir(self) -> Path:
         return BASE_DIR
+
+    @property
+    def ignored_reading_set(self) -> frozenset[str]:
+        """`ignored_readings` normalizado (mayúsculas, sólo letras y dígitos)."""
+        return frozenset(
+            "".join(ch for ch in item.upper() if ch.isalnum())
+            for item in self.ignored_readings.split(",") if item.strip()
+        )
+
+    @property
+    def inference_threads(self) -> int:
+        """Hilos de ONNX Runtime y OpenCV que usará el servicio."""
+        return self.ocr_threads if self.ocr_threads > 0 else effective_cpu_count()
 
     @property
     def cors_origins(self) -> list[str]:

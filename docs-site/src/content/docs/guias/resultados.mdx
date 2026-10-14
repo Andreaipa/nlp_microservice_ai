@@ -13,11 +13,12 @@ generalización y no memorización.
 ## Sistema completo
 
 ```
-identificación correcta ........ 22.2%   (60% en tomas cercanas)
+identificación correcta ........ 31.1%   (60% en tomas cercanas)
+correcto o entre las 4 opciones  40.0%
 errores silenciosos ............  0.0%
 requiere confirmación manual ... 100.0%
-CER medio del serial ...........  0.537
-latencia mediana / p95 ......... 667 ms / 1356 ms
+CER medio del serial ...........  0.254
+latencia mediana / p95 ......... 857 ms / 1682 ms
 ```
 
 ### Por condición de captura
@@ -25,11 +26,11 @@ latencia mediana / p95 ......... 667 ms / 1356 ms
 | Condición    | Acierto |
 | ------------ | ------- |
 | **3.Cerca**  | **60%** |
-| 1.Frontal    | 20%     |
-| 2.Diagonal   | 13%     |
+| 1.Frontal    | 27%     |
+| 2.Diagonal   | 27%     |
 | 4.Lejos      | 13%     |
-| 5.Luz normal | 13%     |
-| 6.Poca luz   | 13%     |
+| 5.Luz normal | 27%     |
+| 6.Poca luz   | 33%     |
 
 <Aside type="tip" title="El dato más accionable del proyecto">
   La diferencia entre el 60% de las tomas cercanas y el 13% de las lejanas no se
@@ -62,29 +63,40 @@ Historial de lo que se probó y lo que consiguió:
 | Corregir el filtro de posición vertical  | anotaciones 92 → **326**        |
 | Entrenar el detector (72 → 247 imágenes) | mAP50 0.147 → **0.301**         |
 | Emparejamiento por fragmento             | acierto 18,9% → **22,2%**       |
+| Buscar el serial dentro de lo leído      | acierto 22,2% → **31,1%**       |
 | Reconocedor propio desde cero            | **empeoró**: CER 0.597 vs 0.537 |
 
-Entrenar el detector mejoró la latencia y la calidad de los recortes, pero
-**no la precisión de identificación**. El límite estaba, y sigue estando, en
-el reconocimiento de caracteres.
+Entrenar el detector mejoró la latencia y la calidad de los recortes, pero no
+la precisión de identificación. Lo que sí la movió fue aprovechar mejor lo que
+el OCR ya leía, contrastándolo con el inventario cerrado (ver abajo).
 
-## Por qué no basta con proponer candidatos
+## Lo que enseñaron las pruebas con teléfono
 
-Una salida razonable para un sistema con acierto bajo sería no exigir la
-lectura exacta y ofrecer al operario los cilindros más parecidos. Se midió:
+Las primeras pruebas con la app sobre cilindros reales (serie `K57…`, el 31%
+del inventario) mostraron que buena parte del fallo no era del OCR sino de
+cómo se interpretaba lo leído:
 
-|                                     | Acierto |
-| ----------------------------------- | ------- |
-| El correcto es el primero propuesto | 22%     |
-| Está entre los tres primeros        | 23%     |
-| Está entre los cinco primeros       | 26%     |
+- El troquelado lleva un espacio en medio ("K5738 060") y el OCR lo devolvía
+  en dos trozos que nadie volvía a unir.
+- Se proponía el fragmento leído con más confianza, que solía ser otra marca
+  ("PW200", la presión de trabajo), en lugar del que existía en el inventario.
+- Con un umbral de error fijo, "300" se daba por el cilindro "804".
+- De las tres variantes de realce, sólo contaba de verdad la "mejor": las
+  lecturas de las otras se descartaban.
 
-Cuatro puntos de diferencia entre el primero y los cinco primeros. Es decir:
-**cuando el OCR falla, no falla por poco**. No devuelve un serial parecido,
-devuelve otra cosa o nada (22 de 90 imágenes sin ningún candidato).
+La corrección busca cada serial del inventario **dentro** de todo lo leído,
+une los trozos de una misma línea, tolera errores en proporción a la longitud
+del serial y descarta las marcas que no son seriales (presiones, fechas,
+número ONU). Con ella, ofrecer alternativas sí sirve:
 
-Este resultado descarta la identificación asistida por candidatos como forma
-de compensar el acierto del OCR.
+|                                       | Antes | Ahora   |
+| ------------------------------------- | ----- | ------- |
+| El correcto es el propuesto           | 22%   | **31%** |
+| El correcto está entre las 4 opciones | 24%   | **40%** |
+| Propone un número equivocado          | 53%   | **27%** |
+
+Con menos propuestas equivocadas, cuando el sistema no está seguro deja el
+campo vacío y pide otra foto en lugar de sugerir un número que confunde.
 
 ## Limitaciones conocidas
 

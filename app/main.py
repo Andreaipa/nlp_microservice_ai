@@ -40,6 +40,10 @@ async def lifespan(app: FastAPI):
     container = getattr(app.state, "container", None) or build_container(settings)
     await container.backend.startup()
     await container.catalog_sync.startup()
+    # El OCR carga sus modelos en la primera petición. Se fuerza aquí, antes de
+    # aceptar tráfico: un balanceador envía peticiones en cuanto /health
+    # responde, y el primer usuario tras cada despliegue pagaría esa espera.
+    await asyncio.to_thread(container.ocr_engine.is_ready)
     app.state.container = container
 
     # Refresco periódico del catálogo desde Supabase, en segundo plano.

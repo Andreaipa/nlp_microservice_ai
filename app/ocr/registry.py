@@ -26,7 +26,7 @@ def build_ocr_engine(settings: Settings) -> OcrEngine:
 
         engine: OcrEngine = RapidOcrEngine(
             min_confidence=settings.ocr_min_confidence,
-            threads=settings.ocr_threads,
+            threads=settings.inference_threads,
         )
     else:
         from app.ocr.paddle_engine import PaddleOcrEngine

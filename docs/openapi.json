@@ -1030,6 +1030,18 @@
             "title": "Catalog Last Sync",
             "description": "Última sincronización correcta con Supabase (ISO 8601)."
           },
+          "build_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Build Id",
+            "description": "Imagen desplegada (commit y fecha); null fuera de un despliegue."
+          },
           "thresholds_calibrated": {
             "type": "boolean",
             "title": "Thresholds Calibrated"

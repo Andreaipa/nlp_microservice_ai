@@ -84,4 +84,5 @@ async def version(container: ServiceContainer = Depends(get_container)) -> Versi
         ),
         catalog_last_sync=container.catalog_sync.status.last_success_at,
         thresholds_calibrated=settings.thresholds_calibrated,
+        build_id=settings.build_id,
     )

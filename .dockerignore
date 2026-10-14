@@ -7,6 +7,7 @@ __pycache__/
 datasets/raw/
 datasets/interim/
 datasets/audit/
+datasets/ocr_synth/
 models/runs/
 notebooks/
 tests/

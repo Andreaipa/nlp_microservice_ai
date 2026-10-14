@@ -35,6 +35,7 @@ export default defineConfig({
           items: [
             { label: 'Qué es este sistema', slug: 'index' },
             { label: 'Puesta en marcha', slug: 'guias/puesta-en-marcha' },
+            { label: 'Despliegue en AWS', slug: 'guias/despliegue-aws' },
             { label: 'Resultados medidos', slug: 'guias/resultados' },
           ],
         },

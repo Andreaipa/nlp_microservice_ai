@@ -103,7 +103,7 @@ jobs:
       - name: Construir
         # Sin OCR: comprueba que la imagen se construye y arranca sin
         # descargar cientos de megabytes de modelos.
-        run: docker build --build-arg OCR=none -t ai-cylinder-service:ci .
+        run: docker build --target runtime --build-arg OCR=none -t ai-cylinder-service:ci .
       - name: Comprobar que responde
         run: |
           docker run -d --name ci -p 8000:8000 \

@@ -15,6 +15,7 @@ código: todos viven en `app/core/config.py`.
 | `AI_HOST` / `AI_PORT` | `0.0.0.0` / `8000` | Dirección de escucha.                                                    |
 | `AI_API_PREFIX`       | `/api/v1`          | Prefijo de las rutas.                                                    |
 | `AI_SERVICE_VERSION`  | `1.0.0`            | Viaja en cada respuesta.                                                 |
+| `AI_BUILD_ID`         | —                  | Imagen desplegada; la fija el script de AWS y aparece en `/version`.     |
 
 ## Detección
 
@@ -33,7 +34,7 @@ código: todos viven en `app/core/config.py`.
 | ---------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------- |
 | `AI_OCR_BACKEND`             | `rapid`     | `rapid` (recomendado), `paddle` o `null`.                                                                         |
 | `AI_OCR_PREPROCESS_VARIANTS` | `3`         | Variantes de realce por recorte. **Es la palanca principal de latencia**: cada una es una pasada completa de OCR. |
-| `AI_OCR_THREADS`             | `0`         | `0` = automático. En equipos modestos, `2`.                                                                       |
+| `AI_OCR_THREADS`             | `0`         | Hilos del detector, el OCR y OpenCV. `0` = la CPU que el proceso puede usar, límite del contenedor incluido.      |
 | `AI_OCR_MIN_CONFIDENCE`      | `0.30`      | Descarta lecturas por debajo.                                                                                     |
 
 ## Umbrales de decisión
@@ -88,6 +89,7 @@ producción: `http://localhost:8100` (ionic serve), `http://localhost`
 | --------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------- |
 | `AI_MAX_UPLOAD_BYTES`             | `15728640`       | 15 MB por fotografía.                                                                                               |
 | `AI_MAX_IMAGE_SIDE`               | `2048`           | Lado mayor tras reescalar. Bajarlo acelera el OCR pero el troquelado pierde legibilidad: no conviene bajar de 1400. |
+| `AI_MAX_CONCURRENT_ANALYSES`      | `1`              | Análisis simultáneos; el resto espera turno. Cada uno ya usa toda la CPU disponible.                                |
 | `AI_LOG_LEVEL` / `AI_LOG_JSON`    | `INFO` / `true`  | JSON por línea en producción.                                                                                       |
 | `AI_AUDIT_ENABLED`                | `true`           | Registro por inferencia.                                                                                            |
 | `AI_AUDIT_DIR`                    | `datasets/audit` | Dónde se guarda.                                                                                                    |

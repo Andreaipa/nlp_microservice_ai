@@ -19,6 +19,9 @@ movimiento se registre en el cilindro equivocado.
 from __future__ import annotations
 
 import json
+import math
+import re
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -28,6 +31,8 @@ from app.parsing.serial import (
     DEFAULT_PATTERN,
     MIN_RELIABLE_SERIAL_LENGTH,
     SerialPattern,
+    allowed_errors,
+    fuzzy_substring_distance,
     normalize_serial_charset,
     weighted_edit_distance,
 )
@@ -258,7 +263,10 @@ class CylinderCatalog:
         if len(cleaned) >= MIN_FRAGMENT_LENGTH:
             containing = [
                 serial for serial in self._entries
-                if cleaned in serial or serial in cleaned
+                if cleaned in serial
+                # Un serial corto ("804") aparece por azar dentro de cualquier
+                # número largo: no cuenta como contenido.
+                or (serial in cleaned and len(serial) >= MIN_FRAGMENT_LENGTH)
             ]
             if len(containing) == 1:
                 serial = containing[0]
@@ -303,16 +311,26 @@ class CylinderCatalog:
         if not scored:
             return SerialMatch(status=MatchStatus.NOT_FOUND, resolved_serial=None)
 
-        within_threshold = [item for item in scored if item[0] <= self._max_distance]
+        # El margen de error es proporcional a la longitud del serial: dos
+        # caracteres de diferencia identifican un serial de nueve, pero entre
+        # "300" y "804" son dos tercios del número. Con un umbral fijo, una
+        # prueba con teléfono dio por bueno "804" leyendo "300".
+        within_threshold = [
+            item for item in scored
+            if item[0] <= min(self._max_distance, allowed_errors(item[1]))
+        ]
         reference_length = max(len(cleaned), 1)
         candidates = [
             CatalogCandidate(
                 numero_serie=serial,
-                distance=int(round(distance)),
+                distance=math.ceil(distance),
                 score=round(max(0.0, 1.0 - distance / reference_length), 4),
             )
-            for distance, serial in scored[:5]
-        ]
+            for distance, serial in scored
+            # Sólo alternativas verosímiles: ofrecer cilindros que no se
+            # parecen en nada a lo leído hace perder tiempo al operario.
+            if distance <= allowed_errors(serial) + 1
+        ][:5]
 
         if not within_threshold:
             # Nada lo bastante cerca para afirmar nada, pero los candidatos
@@ -337,4 +355,69 @@ class CylinderCatalog:
             status=MatchStatus.MATCHED,
             resolved_serial=within_threshold[0][1],
             candidates=candidates,
+        )
+
+    def search(self, texts: Iterable[str]) -> SerialMatch:
+        """Busca qué serial del inventario aparece dentro de los textos leídos.
+
+        Complementa a `resolve`, que compara un candidato ya aislado. El OCR
+        rara vez aísla el serial: lo devuelve con ruido alrededor
+        ("2K5738060"), pegado a otras marcas o partido en trozos. Aquí se
+        recorre el inventario y se busca cada serial completo dentro de lo
+        leído, tolerando los errores que `allowed_errors` admite para su
+        longitud.
+
+        Los seriales cortos (menos de 6 caracteres) sólo cuentan si aparecen
+        como un número completo y exacto: "804" está, por azar, dentro de
+        muchas lecturas.
+        """
+        raw_texts = [t for t in texts if t]
+        normalized = {normalize_serial_charset(t) for t in raw_texts}
+        normalized.discard("")
+        if not normalized:
+            return SerialMatch(status=MatchStatus.NOT_ATTEMPTED)
+        if self.is_empty:
+            return SerialMatch(status=MatchStatus.NO_CATALOG)
+
+        tokens = {
+            normalize_serial_charset(token)
+            for text in raw_texts for token in re.split(r"[\s|/\\]+", text)
+        }
+
+        scored: list[tuple[float, str]] = []
+        for serial in self._entries:
+            budget = allowed_errors(serial)
+            if len(serial) < MIN_FRAGMENT_LENGTH:
+                distance = 0.0 if serial in tokens else math.inf
+            else:
+                distance = min(
+                    fuzzy_substring_distance(serial, text, limit=budget + 1)
+                    for text in normalized
+                )
+            if distance <= budget + 1:
+                scored.append((distance, serial))
+        scored.sort()
+
+        candidates = [
+            CatalogCandidate(
+                numero_serie=serial,
+                distance=math.ceil(distance),
+                score=round(max(0.0, 1.0 - distance / len(serial)), 4),
+            )
+            for distance, serial in scored[:5]
+        ]
+        identified = [(d, s) for d, s in scored if d <= allowed_errors(s)]
+        if not identified:
+            return SerialMatch(
+                status=MatchStatus.NOT_FOUND, resolved_serial=None, candidates=candidates
+            )
+
+        best_distance, best_serial = identified[0]
+        rivals = [d for d, s in scored if s != best_serial]
+        if rivals and rivals[0] - best_distance < self._ambiguity_margin:
+            return SerialMatch(
+                status=MatchStatus.AMBIGUOUS, resolved_serial=None, candidates=candidates
+            )
+        return SerialMatch(
+            status=MatchStatus.MATCHED, resolved_serial=best_serial, candidates=candidates
         )

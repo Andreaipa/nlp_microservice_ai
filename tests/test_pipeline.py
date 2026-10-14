@@ -1,6 +1,10 @@
 """Pruebas del pipeline completo con un OCR controlado."""
 from __future__ import annotations
 
+import asyncio
+import time
+
+import numpy as np
 import pytest
 
 from app.api.deps import build_container
@@ -10,6 +14,7 @@ from app.parsing.serial import consensus_candidates
 from app.schemas.analyze import MatchStatus, ReviewReason
 from app.schemas.common import FieldSource, OcrLine
 from app.services.pipeline import AnalysisPipeline
+from app.vision.base import Detector
 
 REAL = "19S206055"
 
@@ -329,3 +334,46 @@ async def test_auto_accept_threshold_of_one_never_auto_accepts(
     assert ReviewReason.CONFIRMATION_REQUIRED in result.review_reasons
     # Y no se atribuye a una confianza baja, que sería falso.
     assert ReviewReason.LOW_OCR_CONFIDENCE not in result.review_reasons
+
+
+class _SlowDetector:
+    """Detector que tarda como uno real: ocupa su hilo durante la inferencia."""
+
+    name = "lento"
+
+    def __init__(self, inner: Detector, seconds: float) -> None:
+        self._inner = inner
+        self._seconds = seconds
+
+    def detect(self, image: np.ndarray):
+        time.sleep(self._seconds)
+        return self._inner.detect(image)
+
+    def is_ready(self) -> bool:
+        return True
+
+    def describe(self) -> str:
+        return "lento"
+
+
+@pytest.mark.asyncio
+async def test_analysis_does_not_block_the_event_loop(
+    settings: Settings, stamped_jpeg: bytes
+):
+    """Mientras se analiza una foto, el servicio debe seguir atendiendo.
+
+    Si el análisis bloquease el bucle de eventos, /health dejaría de responder
+    durante la inferencia y el balanceador de AWS daría el contenedor por
+    caído en plena prueba.
+    """
+    pipeline = build_pipeline(settings, [OcrLine(text="JP5 19S206055", confidence=0.9)])
+    pipeline._detector = _SlowDetector(pipeline._detector, seconds=0.5)
+
+    analysis = asyncio.create_task(pipeline.analyze(stamped_jpeg, request_id="lento"))
+    started = time.perf_counter()
+    await asyncio.sleep(0.01)
+    lag = time.perf_counter() - started
+    result = await analysis
+
+    assert lag < 0.25
+    assert result.success
